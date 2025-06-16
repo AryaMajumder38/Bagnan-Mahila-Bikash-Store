@@ -12,15 +12,16 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 After cloning the repo, install all required libraries:
 
-```bash
+```
 bun install
+
+
 This will read the package.json file and install dependencies using Bun, generating a bun.lockb file.
 
 2️⃣ Start the Development Server
-bash
-Copy
-Edit
+
 bun run dev
+
 Then, open your browser and visit:
 
 👉 http://localhost:3000
@@ -30,9 +31,7 @@ You should see your Next.js app running.
 🛠 Project Structure
 You can begin editing the app by modifying:
 
-bash
-Copy
-Edit
+
 app/page.tsx
 Changes will be hot-reloaded automatically.
 
