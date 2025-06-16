@@ -9,9 +9,11 @@ import { Dropdown } from "react-day-picker";
 import { set } from "date-fns";
 import { useDropdownPosition } from "./use-dropdown-position";
 import { SubcategoryMenu } from "./subcategory-menu";
+import { CustomCategory } from "../types";
+import Link from "next/link";
 
 interface Props {
-    category: Category;
+    category: CustomCategory;
     isActive: boolean;
     isNavigationHovered: boolean;
 }
@@ -34,12 +36,19 @@ export const CategoryDropdown = ({
     const onMouseLeave = () => setIsOpen(false); 
     const dropdownPosition = getDropdownPosition();
 
+    const toggleDropdown = () => {
+        if (category.subcategories?.docs?.length) {
+            setIsOpen(!isOpen);
+        }
+    }
+
     // Implement the dropdown logic here
     return (
         <div className="relative "
         ref={dropdownRef}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
+        onClick={toggleDropdown}
         >
             <div className="relative"
             
@@ -48,9 +57,14 @@ export const CategoryDropdown = ({
         className={cn(
             "h-11 px-4 bg-transparent border-transparent rounded-full  hover:bg-whithe hover:border-primary text-black",
             isActive && !isNavigationHovered && "bg-white border-primary",
+            isOpen && "bg-white border-primary shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-[4px] hover:-translate-y-[4px] ",
         )}
         >
+            <Link
+            href={`/${category.slug === "all" ? "" : category.slug}`}>
             {category.name}
+            </Link>
+            
             {/* Add dropdown content here */} 
         </Button>
             {category.subcategories &&category.subcategories.length > 0 && (
