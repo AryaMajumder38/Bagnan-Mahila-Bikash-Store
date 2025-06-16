@@ -30,7 +30,7 @@ const Layout = async  ({ children }: Props) => {
 
       const formattedData = data.docs.map((doc: any) => ({
         ...doc,
-        subcategories: (doc.subcategories?.docs ?? []).map((doc) => ({
+        subcategories: (doc.subcategories?.docs ?? []).map((doc : unknown) => ({
           ...(doc as Category),
           subcategories:undefined, // Exclude subcategories from subcategories
         }))
@@ -40,7 +40,7 @@ const Layout = async  ({ children }: Props) => {
     return (
         <div className="flex flex-col min-h-screen">
             <Navbar/>
-            <SearchFilters data={data}/>
+            <SearchFilters data={formattedData}/>
             <div className="flex-1 bg-[#F4F4F0]">
         {children}
             </div>
