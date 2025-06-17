@@ -5,7 +5,7 @@ import { CustomCategory } from "@/app/(app)/(home)/types";
 
 export const categoriesRouter = createTRPCRouter({ 
     getMany: baseProcedure.query(async ({ ctx }) => {
-      // const payload = await getPayload({
+      // const payload = await getPayload({ 
       //   config: configPromise,
       // })
 

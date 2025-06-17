@@ -59,7 +59,7 @@ export const Navbar = () => {
         <nav className="h-20 flex border-b  justify-between font-medium bg-white">
             <Link href="/" className="pl-6 flex items-center">
                     <span className={cn("text-5xl font-semibold",poppins.className)}>
-                        Home
+                        Website
                         </span>
                 </Link>
 
@@ -87,7 +87,7 @@ export const Navbar = () => {
                         variant="secondary"
                         className="border-l border-t-0 border-b-0  border-r-0 px-12 h-full rounded-none bg-white hover:bg-red-400 transition-colors text-lg "
                         >
-                            <Link href="/sign-in">
+                            <Link prefetch href="/sign-in">
                         Login
                         </Link>
                         </Button>
@@ -95,8 +95,8 @@ export const Navbar = () => {
                         asChild
                         className="border-l border-t-0 border-b-0  border-r-0 px-12 h-full rounded-none bg-black text-white hover:bg-red-400 hover:text-black transition-colors text-lg "
                          >
-                            <Link href="/sign-in">
-                        Start Selling
+                            <Link prefetch href="/sign-up">
+                        Register
                         </Link>
                         </Button>
                     </div>
