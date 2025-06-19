@@ -9,6 +9,12 @@ import{
 
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import Link from "next/link";
+import { useTRPC } from "@/trpc/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { LogOutIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface NavbarItem  {
     href: string;
@@ -27,6 +33,29 @@ export const NavbarSidebar = ({
     open,
     onOpenChange,
 }: Props) => {
+    const trpc = useTRPC();
+    const session = useQuery(trpc.auth.session.queryOptions());
+    const router = useRouter();
+    const queryClient = useQueryClient();
+    
+    const logoutMutation = useMutation(trpc.auth.logout.mutationOptions({
+        onSuccess: () => {
+            queryClient.clear();
+            router.push("/");
+            router.refresh();
+            onOpenChange(false);
+            toast.success("Logged out successfully");
+        },
+        onError: (error: any) => {
+            toast.error("Failed to logout");
+            console.error("Logout error:", error);
+        },
+    }));
+
+    const handleLogout = () => {
+        logoutMutation.mutate();
+    };
+
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent
@@ -53,21 +82,47 @@ export const NavbarSidebar = ({
                                 {item.children}
                             </Link>
                         ))}
+                        
                         <div className="border-t">
-                            <Link       
-                            onClick={() => onOpenChange(false)}
-                            href="/sign-in">
-                                <div className="w-full text-left p-4 hover:bg-black hover:text-white flex items-center text-base font-medium">
-                                    Log in
-                                </div>
-                            </Link>
-                        <Link onClick={() => onOpenChange(false)}
-                        href="/sign-up">
-                                <div className="w-full text-left p-4 hover:bg-black hover:text-white flex items-center text-base font-medium">
-                                    Strat Selling
-                                </div>
-                            </Link>
-
+                            {session.data?.user ? (
+                                <>
+                                    <Link       
+                                        onClick={() => onOpenChange(false)}
+                                        href="/admin"
+                                    >
+                                        <div className="w-full text-left p-4 hover:bg-black hover:text-white flex items-center text-base font-medium">
+                                            Dashboard
+                                        </div>
+                                    </Link>
+                                    <Button
+                                        onClick={handleLogout}
+                                        disabled={logoutMutation.isPending}
+                                        className="w-full text-left p-4 hover:bg-black hover:text-white flex items-center text-base font-medium bg-transparent border-0 rounded-none justify-start"
+                                    >
+                                        <LogOutIcon className="mr-2 h-4 w-4" />
+                                        {logoutMutation.isPending ? "Logging out..." : "Logout"}
+                                    </Button>
+                                </>
+                            ) : (
+                                <>
+                                    <Link       
+                                        onClick={() => onOpenChange(false)}
+                                        href="/sign-in"
+                                    >
+                                        <div className="w-full text-left p-4 hover:bg-black hover:text-white flex items-center text-base font-medium">
+                                            Log in
+                                        </div>
+                                    </Link>
+                                    <Link 
+                                        onClick={() => onOpenChange(false)}
+                                        href="/sign-up"
+                                    >
+                                        <div className="w-full text-left p-4 hover:bg-black hover:text-white flex items-center text-base font-medium">
+                                            Start Selling
+                                        </div>
+                                    </Link>
+                                </>
+                            )}
                         </div>
 
                     
@@ -77,4 +132,5 @@ export const NavbarSidebar = ({
 
             </Sheet>
 
-)};
+)
+};

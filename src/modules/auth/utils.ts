@@ -20,3 +20,10 @@ export const  generateAuthCookies= async({
         // domain:"", // TODO cross domain cookie sharing
     });
     };
+
+export const clearAuthCookies = async (prefix: string) => {
+    const cookies = await getCookies();
+    const tokenCookieName = `${prefix}-token`;
+    
+    cookies.delete(tokenCookieName);
+};

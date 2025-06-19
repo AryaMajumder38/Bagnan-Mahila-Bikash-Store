@@ -5,7 +5,7 @@ import { TRPCError } from "@trpc/server";
 
 import { register } from "module";
 import { loginSchema, registerSchema } from "../schemas";
-import { generateAuthCookies } from "../utils";
+import { generateAuthCookies, clearAuthCookies } from "../utils";
 
 export const authRouter = createTRPCRouter({
   session: baseProcedure.query(async ({ ctx }) => {
@@ -113,6 +113,21 @@ export const authRouter = createTRPCRouter({
 
         return data;
 }),
+
+logout: baseProcedure
+  .mutation(async ({ ctx }) => {
+    try {
+      // Clear the auth cookies
+      await clearAuthCookies(ctx.db.config.cookiePrefix || 'payload');
+      
+      return { success: true };
+    } catch (error) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to logout',
+      });
+    }
+  }),
 
 });
 
