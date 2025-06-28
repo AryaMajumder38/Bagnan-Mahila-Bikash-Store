@@ -8,12 +8,16 @@ import { cn } from "@/lib/utils";
 import { ListFilterIcon } from "lucide-react";
 import { CategoriesSidebar } from "./categories-sidebar";
 import { CategoriesGetManyOutput } from "@/modules/categories/types";
+import { useParams } from "next/navigation";
 
 interface Props {
     data: CategoriesGetManyOutput; // Adjust type as needed
 }
 
 export const Categories = ({ data }: Props) => {
+
+    const params = useParams();
+
     const conatainerRef = useRef<HTMLDivElement>(null);
     const measureRef = useRef<HTMLDivElement>(null);
     const viewAllRef = useRef<HTMLDivElement>(null);
@@ -23,7 +27,8 @@ export const Categories = ({ data }: Props) => {
     //const [isAnyHovered, setIsAnyHovered] = useState(data.length);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    const activeCategory= "all" ;
+    const categoryParam = params.category as string | undefined;
+    const activeCategory = categoryParam || "all";
 
     const activeCategoryIndex = data.findIndex((cat) => cat.slug === activeCategory);
     const isActiveCategoryIndex = activeCategoryIndex >= visibleCount  && activeCategoryIndex !== -1;

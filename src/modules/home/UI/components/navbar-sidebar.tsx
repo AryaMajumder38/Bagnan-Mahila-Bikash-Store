@@ -18,7 +18,8 @@ import { toast } from "sonner";
 
 interface NavbarItem  {
     href: string;
-    children: React.ReactNode;
+  children: React.ReactNode;
+  isActive: boolean;
 }
 
 

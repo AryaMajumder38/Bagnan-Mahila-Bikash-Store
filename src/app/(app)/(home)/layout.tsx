@@ -1,9 +1,12 @@
 
 
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
-import { Footer } from "./footer";
-import  Navbar  from "./navbar";
-import { SearchFilters } from "./search-filters";
+
+import { Footer } from "@/modules/home/UI/components/footer";
+import  Navbar  from "@/modules/home/UI/components/navbar";
+import { SearchFilters } from "@/modules/home/UI/components/search-filters";
+
+
 import { Category } from '@/payload-types';
 import { CustomCategory } from './types';
 import { getQueryClient, trpc } from '@/trpc/server';

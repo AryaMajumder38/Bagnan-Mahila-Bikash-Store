@@ -27,7 +27,7 @@ export const SearchInput = ({
             <CategoriesSidebar open = {isSidebarOpen} onOpenChange={setIsSidebarOpen}/>
             <div className="relative w-full">
                 <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-500"/>
-                <Input className="pl-8" placeholder="Serach Products" disabled={disabled} />
+                <Input className="pl-8 bg-white" placeholder="Search Products" disabled={disabled} />
             </div>
             <Button
             variant="elevated"

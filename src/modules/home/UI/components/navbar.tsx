@@ -25,13 +25,20 @@ import { cn } from "@/lib/utils";
 import { Poppins } from "next/font/google";
 import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
+import { ReactNode } from "react";
 
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["700"],
 });
 
-const NavbarItem = ({ href, children, isActive }) => {
+interface NavbarItemProps {
+  href: string;
+  children: ReactNode;
+  isActive: boolean;
+}
+
+const NavbarItem = ({ href, children, isActive }: NavbarItemProps) => {
   return (
     <Button
       asChild
@@ -65,23 +72,11 @@ const Navbar = () => {
     <header className="bg-white shadow-sm border-b border-earth-200 sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 pl-2">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-sage-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm sm:text-lg">
-                SW
-              </span>
-            </div>
-            <div className="hidden xs:block">
-              <h1
-                className={cn(
-                  "text-lg sm:text-xl font-bold text-sage-800",
-                  poppins.className
-                )}
-              >
-                Seva Wings
-              </h1>
-              <p className="text-xs text-sage-600">Empowering Women</p>
+          {/* Website Logo-like Button (Amazon style) */}
+          <Link href="/" className="flex items-center">
+            <div className="flex items-center justify-center px-2 py-1">
+              <span className={cn("text-2xl font-bold text-black mr-1", poppins.className)}>SEVA</span>
+              <span className={cn("text-2xl font-bold text-black mr-1", poppins.className)}>WINGS</span>
             </div>
           </Link>
 
@@ -238,3 +233,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
