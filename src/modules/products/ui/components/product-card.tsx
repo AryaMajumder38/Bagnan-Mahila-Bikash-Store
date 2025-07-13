@@ -2,30 +2,40 @@
 
 import { Product } from "@/payload-types";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+
+// Fallback image path
+const FALLBACK_IMAGE = "/image-placeholder.svg";
 
 interface ProductCardProps {
   product: Product;
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
-  // Determine the main image URL
+  // Determine the main image URL - use directly as provided by Payload CMS
   const imageUrl = (() => {
+    // If it's an object with url property (from Payload)
     if (typeof product.image === 'object' && product.image) {
       return (product.image as any).url;
-    } else if (typeof product.image === 'string') {
+    } 
+    // If it's a string URL
+    else if (typeof product.image === 'string') {
       return product.image;
     }
     return null;
   })();
     
-  // Determine the hover image URL
+  // Determine the hover image URL - use directly as provided by Payload CMS
   const hoverImageUrl = (() => {
+    // If it's an object with url property (from Payload)
     if (typeof product.hoverImage === 'object' && product.hoverImage) {
       return (product.hoverImage as any).url;
-    } else if (typeof product.hoverImage === 'string') {
+    } 
+    // If it's a string URL
+    else if (typeof product.hoverImage === 'string') {
       return product.hoverImage;
     }
     return null;
@@ -46,21 +56,24 @@ const ProductCard = ({ product }: ProductCardProps) => {
     hoverImageUrl
   });
   
-  // State to track whether the card is being hovered
+  // State to track whether the card is being hovered and image error states
   const [isHovered, setIsHovered] = useState(false);
+  const [mainImageError, setMainImageError] = useState(false);
+  const [hoverImageError, setHoverImageError] = useState(false);
 
   return (
-    <Card 
-      className="overflow-hidden flex flex-col h-full transition-all duration-500 hover:shadow-lg p-0"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+    <Link href={`/products/${product.id}`} className="block h-full group">
+      <Card 
+        className="overflow-hidden flex flex-col h-full transition-all duration-500 hover:shadow-lg hover:border-primary/50 p-0 cursor-pointer"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
       <div className="aspect-square relative bg-muted overflow-hidden group w-full">
         {/* Show either main image or hover image based on hover state */}
         {(imageUrl || hoverImageUrl) ? (
           <>
             {/* Main image - always render but control opacity */}
-            {imageUrl && (
+            {imageUrl && !mainImageError && (
               <Image 
                 src={imageUrl} 
                 alt={product.name || "Product image"}
@@ -71,14 +84,21 @@ const ProductCard = ({ product }: ProductCardProps) => {
                   transition-all 
                   duration-200
                   ease-in-out
-                  ${isHovered && hoverImageUrl ? 'opacity-0' : 'opacity-100'}
+                  ${isHovered && hoverImageUrl && !hoverImageError ? 'opacity-0' : 'opacity-100'}
                   ${isHovered ? 'scale-103' : 'scale-100'}
                 `}
+                onError={(e) => {
+                  console.error(`Failed to load main image: ${imageUrl}`);
+                  
+                  // Use fallback image directly
+                  setMainImageError(true);
+                  (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
+                }}
               />
             )}
             
             {/* Hover image - always render if exists but control opacity */}
-            {hoverImageUrl && (
+            {hoverImageUrl && !hoverImageError && (
               <Image 
                 src={hoverImageUrl} 
                 alt={`${product.name || "Product"} - hover view`}
@@ -91,6 +111,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
                   ease-in-out
                   ${isHovered ? 'scale-106 opacity-100' : 'scale-100 opacity-0'}
                 `}
+                onError={(e) => {
+                  console.error(`Failed to load hover image: ${hoverImageUrl}`);
+                  
+                  // Use fallback image directly
+                  setHoverImageError(true);
+                  (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
+                }}
               />
             )}
           </>
@@ -103,7 +130,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       
       <CardHeader className="p-3 pb-1">
         <div className="flex justify-between items-start gap-1">
-          <CardTitle className="text-sm line-clamp-1">{product.name}</CardTitle>
+          <CardTitle className="text-sm line-clamp-1 group-hover:text-primary transition-colors">{product.name}</CardTitle>
           <Badge className="text-xs py-0 h-5">{categoryName}</Badge>
         </div>
       </CardHeader>
@@ -123,6 +150,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </Badge>
       </CardFooter>
     </Card>
+    </Link>
   );
 };
 

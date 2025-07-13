@@ -4,6 +4,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   images: {
+    domains: ['localhost'],
     remotePatterns: [
       {
         protocol: 'http',
@@ -12,7 +13,23 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
-  }
+    // Allow the Image component to use our fallback image
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+  },
+  // Configure rewrites to handle media paths
+  async rewrites() {
+    return [
+      {
+        source: '/media/:path*',
+        destination: '/media/:path*',
+      }
+    ];
+  },
+  experimental: {
+    serverComponentsExternalPackages: ['sharp', 'payload'],
+  },
 };
 
 export default withPayload(nextConfig);

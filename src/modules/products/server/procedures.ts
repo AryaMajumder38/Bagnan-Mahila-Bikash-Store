@@ -1,11 +1,29 @@
 import { CustomCategory } from "@/app/(app)/(home)/types";
-import { Category } from "@/payload-types";
+import { Category, Media } from "@/payload-types";
 import { baseProcedure, createTRPCRouter } from "@/trpc/init";
 import { sub } from "date-fns";
+import { id } from "date-fns/locale";
 import { Where } from "payload";
 import { z } from "zod";
 
 export const productsRouter = createTRPCRouter({ 
+  getOne: baseProcedure
+    .input(
+      z.object(
+        {id: z.string()}
+      )
+    )
+    .query(async ({ ctx, input }) => {
+      const product = await ctx.db.findByID({
+        collection: 'products',
+        id: input.id,
+        depth : 2,
+      });
+      return {
+        ...product,
+        image: product.image as Media || null, // Ensure image URL is properly formatted
+      };
+    }),
   getMany: baseProcedure
     .input(z.object({
       category: z.string().nullable().optional(),

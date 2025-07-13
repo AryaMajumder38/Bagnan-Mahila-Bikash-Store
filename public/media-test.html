@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Media Test</title>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 20px; }
+    .image-test { border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; }
+    h2 { margin-top: 0; }
+    img { max-width: 300px; border: 1px solid #eee; }
+  </style>
+</head>
+<body>
+  <h1>Image Access Test</h1>
+  
+  <div class="image-test">
+    <h2>Direct Access to Media Files</h2>
+    <p>Testing image: 71AK6ErhjhL.jpg</p>
+    <img src="/media/71AK6ErhjhL.jpg" alt="Test image 1">
+    <p id="status1"></p>
+  </div>
+  
+  <div class="image-test">
+    <h2>API Media Path</h2>
+    <p>Testing image: 71AK6ErhjhL.jpg via API path</p>
+    <img src="/api/media/file/71AK6ErhjhL.jpg" alt="Test image 2">
+    <p id="status2"></p>
+  </div>
+  
+  <div class="image-test">
+    <h2>Fallback Image</h2>
+    <p>Testing fallback image</p>
+    <img src="/image-placeholder.svg" alt="Fallback">
+    <p id="status3"></p>
+  </div>
+
+  <script>
+    // Check if images loaded successfully
+    document.querySelectorAll('img').forEach((img, index) => {
+      const statusElement = document.getElementById(`status${index+1}`);
+      
+      img.onload = () => {
+        statusElement.textContent = '✅ Image loaded successfully';
+        statusElement.style.color = 'green';
+      };
+      
+      img.onerror = () => {
+        statusElement.textContent = '❌ Failed to load image';
+        statusElement.style.color = 'red';
+      };
+    });
+  </script>
+</body>
+</html>
