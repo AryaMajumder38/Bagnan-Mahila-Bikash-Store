@@ -5,18 +5,21 @@ import { Suspense } from "react";
 
 interface Props {
     params: {
+        category: string;
         subcategory: string;
     };
 }
 
 
-const Page = async ({ params  }: Props) => {
-    const { subcategory } = await  params;
+const Page = async ({ params }: Props) => {
+    const { category, subcategory } = params;
 
     const queryClient = getQueryClient();
     void queryClient.prefetchQuery(trpc.products.getMany.queryOptions(
         {
-            category: subcategory,// Pass the subcategory from params, or null if not provided
+            category: subcategory, // Pass the subcategory as the category parameter
+            page: 1,
+            limit: 12,
         }
     )); 
 

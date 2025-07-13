@@ -16,7 +16,9 @@ const Page = async ({ params  }: Props) => {
     const queryClient = getQueryClient();
     void queryClient.prefetchQuery(trpc.products.getMany.queryOptions(
         {
-            category,// Pass the category from params, or null if not provided
+            category, // Pass the category from params, or null if not provided
+            page: 1,
+            limit: 12,
         }
     )); 
 

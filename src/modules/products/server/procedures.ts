@@ -9,6 +9,8 @@ export const productsRouter = createTRPCRouter({
   getMany: baseProcedure
     .input(z.object({
       category: z.string().nullable().optional(),
+      page: z.number().default(1),
+      limit: z.number().default(12),
     }))
     .query(async ({ ctx, input }) => {
 
@@ -48,8 +50,11 @@ export const productsRouter = createTRPCRouter({
 
         const data = await ctx.db.find({
           collection: 'products',
-          depth: 1,
+          depth: 2, // Increase depth to properly resolve nested relations like media
           where,
+          page: input.page,
+          limit: input.limit,
+          pagination: true,
         });
 
 

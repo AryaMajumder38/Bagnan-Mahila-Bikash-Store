@@ -27,7 +27,8 @@ export const authRouter = createTRPCRouter({
       registerSchema // Assuming registerSchema is imported from schemas.ts
     )
     .mutation(async ({ ctx, input }) => {
-      const exixtingData = await ctx.db.find({
+      // Check for existing username
+      const existingUsernameData = await ctx.db.find({
           collection: "users",
           limit: 1,
           where: {
@@ -35,25 +36,64 @@ export const authRouter = createTRPCRouter({
             equals: input.username,
           },
         }
-      })
+      });
 
-      const exixtingUser = exixtingData.docs[0];
-      
-      if(exixtingUser){
+      if(existingUsernameData.docs[0]){
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: 'Username already exists',
         });
       }
-
-      await ctx.db.create({
-        collection: "users",
-        data: {
-          email: input.email,
-          password: input.password,
-          username: input.username,
-        },
+      
+      // Check for existing email
+      const existingEmailData = await ctx.db.find({
+          collection: "users",
+          limit: 1,
+          where: {
+           email: {
+            equals: input.email,
+          },
+        }
       });
+      
+      if(existingEmailData.docs[0]){
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: 'Email already in use',
+        });
+      }
+
+      try {
+        // Create a tenant first - using any to bypass TypeScript checks
+        const tenant = await (ctx.db as any).create({
+          collection: "tenants",
+          data: {
+            slug: input.username.toLowerCase().replace(/\s+/g, '-'),
+            tenantname: input.username,
+            email: `${input.username}-tenant@${input.email.split('@')[1]}`, // Create a unique tenant email based on username
+            password: input.password, // Set password for tenant auth
+          },
+        });
+
+        // Create user with proper tenant association
+        await (ctx.db as any).create({
+          collection: "users",
+          data: {
+            email: input.email,
+            password: input.password,
+            username: input.username,
+            roles: ["user"],
+            tenants: [{ tenant: tenant.id }],
+          },
+        });
+      } catch (error) {
+        console.error("Error during user/tenant creation:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create account",
+          cause: error,
+        });
+      }
       const data = await ctx.db.login({
         collection: "users",
         data: {

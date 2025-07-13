@@ -31,6 +31,15 @@ export const Products: CollectionConfig = {
         relationTo: "media",
         },
         {
+        name: "hoverImage",
+        type: "upload",
+        relationTo: "media",
+        label: "Hover Image (shown on hover)",
+        admin: {
+          description: "This image will be shown when the user hovers over the product"
+        }
+        },
+        {
         name: "refundPolicy",
         type: "select",
         options: [
