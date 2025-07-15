@@ -22,7 +22,7 @@ export const BreadcrumbNavigation = ({
     activeSubCategory,
     activeSubCategoryName,
 }: Props) => {  
-    if (!activeCategoryName || activeCategoryName === "all") {
+    if (!activeCategoryName && activeCategory !== "all") {
         return null; // Don't render if no category is active
     }
 
@@ -30,13 +30,23 @@ export const BreadcrumbNavigation = ({
 
         <Breadcrumb>
             <BreadcrumbList>
-                <BreadcrumbItem>
-                    <BreadcrumbLink asChild className="text-xl font-medium underline text-primary">
-                        <Link href={`/${activeCategory}`}>
-                            {activeCategoryName}
-                        </Link>
-                    </BreadcrumbLink>
-                </BreadcrumbItem>
+                {activeCategory === "all" ? (
+                    <BreadcrumbItem>
+                        <BreadcrumbLink asChild className="text-xl font-medium underline text-primary">
+                            <Link href="/products">
+                                All Products
+                            </Link>
+                        </BreadcrumbLink>
+                    </BreadcrumbItem>
+                ) : (
+                    <BreadcrumbItem>
+                        <BreadcrumbLink asChild className="text-xl font-medium underline text-primary">
+                            <Link href={`/${activeCategory}`}>
+                                {activeCategoryName}
+                            </Link>
+                        </BreadcrumbLink>
+                    </BreadcrumbItem>
+                )}
                 
                 {activeSubCategoryName && (
                     <>

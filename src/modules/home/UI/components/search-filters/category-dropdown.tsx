@@ -38,7 +38,7 @@ export const CategoryDropdown = ({
     const dropdownPosition = getDropdownPosition();
 
     const toggleDropdown = () => {
-        if (category.subcategories?.docs?.length) {
+        if (category.subcategories && category.subcategories.length > 0) {
             setIsOpen(!isOpen);
         }
     }
@@ -62,7 +62,7 @@ export const CategoryDropdown = ({
         )}
         >
             <Link
-            href={`/${category.slug === "all" ? "" : category.slug}`}>
+            href={`${category.slug === "all" ? "/products" : `/${category.slug}`}`}>
             {category.name}
             </Link>
             

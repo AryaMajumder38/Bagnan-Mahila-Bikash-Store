@@ -26,6 +26,7 @@ import { Poppins } from "next/font/google";
 import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { ReactNode } from "react";
+import { useCart } from "@/modules/cart/context/cart-context";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -63,10 +64,10 @@ const NavbarItems = [
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const cartItemCount = 3;
   const pathname = usePathname();
   const trpc = useTRPC();
   const session = useQuery(trpc.auth.session.queryOptions());
+  const { cartCount, openCart } = useCart();
 
   return (
     <header className="bg-white shadow-sm border-b border-earth-200 sticky top-0 z-50">
@@ -98,6 +99,9 @@ const Navbar = () => {
                 <ChevronDown className="h-4 w-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-white border border-earth-200 shadow-lg">
+                <DropdownMenuItem className="text-sage-700 hover:bg-earth-100" asChild>
+                  <Link href="/products">All Products</Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem className="text-sage-700 hover:bg-earth-100">
                   Clothes
                 </DropdownMenuItem>
@@ -153,11 +157,12 @@ const Navbar = () => {
                 variant="ghost"
                 size="icon"
                 className="relative h-8 w-8 sm:h-10 sm:w-10"
+                onClick={openCart}
               >
                 <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-sage-700" />
-                {cartItemCount > 0 && (
+                {cartCount > 0 && (
                   <Badge className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center p-0 bg-terracotta-500 text-white text-xs">
-                    {cartItemCount}
+                    {cartCount}
                   </Badge>
                 )}
               </Button>
@@ -198,6 +203,12 @@ const Navbar = () => {
               <div className="space-y-2">
                 <div className="text-sage-700 font-medium">Shop</div>
                 <div className="ml-4 space-y-2">
+                  <Link
+                    href="/products"
+                    className="block text-sage-600 hover:text-sage-800"
+                  >
+                    All Products
+                  </Link>
                   <Link
                     href="#"
                     className="block text-sage-600 hover:text-sage-800"

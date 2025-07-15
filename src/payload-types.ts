@@ -73,6 +73,7 @@ export interface Config {
     categories: Category;
     products: Product;
     tenants: Tenant;
+    carts: Cart;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -88,6 +89,7 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     tenants: TenantsSelect<false> | TenantsSelect<true>;
+    carts: CartsSelect<false> | CartsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -276,12 +278,39 @@ export interface Product {
   description?: string | null;
   price: number;
   category: string | Category;
+  /**
+   * Main product image
+   */
   image?: (string | null) | Media;
   /**
    * This image will be shown when the user hovers over the product
    */
   hoverImage?: (string | null) | Media;
+  /**
+   * Add multiple product images (optional)
+   */
+  additionalImages?:
+    | {
+        image: string | Media;
+        id?: string | null;
+      }[]
+    | null;
   refundPolicy?: ('30 days' | '14 days' | '7 days' | 'No refund') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carts".
+ */
+export interface Cart {
+  id: string;
+  userId: string;
+  items: {
+    product: string | Product;
+    quantity: number;
+    id?: string | null;
+  }[];
   updatedAt: string;
   createdAt: string;
 }
@@ -311,6 +340,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'tenants';
         value: string | Tenant;
+      } | null)
+    | ({
+        relationTo: 'carts';
+        value: string | Cart;
       } | null);
   globalSlug?: string | null;
   user:
@@ -465,6 +498,12 @@ export interface ProductsSelect<T extends boolean = true> {
   category?: T;
   image?: T;
   hoverImage?: T;
+  additionalImages?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
   refundPolicy?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -487,6 +526,22 @@ export interface TenantsSelect<T extends boolean = true> {
   hash?: T;
   loginAttempts?: T;
   lockUntil?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carts_select".
+ */
+export interface CartsSelect<T extends boolean = true> {
+  userId?: T;
+  items?:
+    | T
+    | {
+        product?: T;
+        quantity?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

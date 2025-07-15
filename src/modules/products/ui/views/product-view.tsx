@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image";
+import Link from "next/link";
 import { useTRPC } from "@/trpc/client";
 import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -8,8 +9,11 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useImageLoader } from "@/hooks/use-image-loader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Heart, Share2, ChevronRight, Minus, Plus, Truck } from "lucide-react";
+import { ShoppingCart, Heart, Share2, ChevronRight, Minus, Plus, Truck, LogIn } from "lucide-react";
 import { StarRating } from "@/components/star-rating"; // Assuming you have a StarRating component
+import { useCart } from "@/modules/cart/context/cart-context";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const FALLBACK_IMAGE = "/image-placeholder.svg";
 
@@ -19,20 +23,36 @@ interface ProductViewProps {
 
 export const ProductView = ({ productId }: ProductViewProps) => {
   const trpc = useTRPC();
+  const router = useRouter();
+  const { addItem, items } = useCart();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [hoverImageUrl, setHoverImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeImage, setActiveImage] = useState<string | null>(null);
+  
+  // Get user session to determine if user is logged in
+  const { data: session } = useSuspenseQuery(
+    trpc.auth.session.queryOptions()
+  );
   const [imageError, setImageError] = useState<boolean>(false);
   const [hoverImageError, setHoverImageError] = useState<boolean>(false);
   const [quantity, setQuantity] = useState<number>(1);
   const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
   const [zoomLevel, setZoomLevel] = useState<number>(1);
+  const [isInCart, setIsInCart] = useState<boolean>(false);
 
   // Product data fetch
   const { data } = useSuspenseQuery(
     trpc.products.getOne.queryOptions({ id: productId })
   );
+
+  // Check if product is in cart
+  useEffect(() => {
+    if (data) {
+      const productInCart = items.some(item => item.product.id === data.id);
+      setIsInCart(productInCart);
+    }
+  }, [data, items]);
 
   // Process and set image URLs
   useEffect(() => {
@@ -78,22 +98,26 @@ export const ProductView = ({ productId }: ProductViewProps) => {
     <div className="max-w-7xl mx-auto">
       {/* Breadcrumb Navigation */}
       <nav className="py-4 px-6 flex items-center text-sm text-muted-foreground">
-        <a href="/" className="hover:text-primary transition-colors">Home</a>
+        <Link href="/" className="hover:text-primary transition-colors">Home</Link>
         <ChevronRight className="h-3 w-3 mx-2" />
-        <a href="/products" className="hover:text-primary transition-colors">Products</a>
-        {data?.category && typeof data.category === 'object' && (
+        {data?.category && typeof data.category === 'object' ? (
           <>
-            <ChevronRight className="h-3 w-3 mx-2" />
-            <a 
-              href={`/${(data.category as any).slug}`} 
+            <Link 
+              href={`/${(data.category as any).slug}`}
               className="hover:text-primary transition-colors"
             >
               {(data.category as any).name}
-            </a>
+            </Link>
+            <ChevronRight className="h-3 w-3 mx-2" />
+            <span className="text-foreground font-medium truncate">{data?.name}</span>
+          </>
+        ) : (
+          <>
+            <Link href="/products" className="hover:text-primary transition-colors">All Products</Link>
+            <ChevronRight className="h-3 w-3 mx-2" />
+            <span className="text-foreground font-medium truncate">{data?.name}</span>
           </>
         )}
-        <ChevronRight className="h-3 w-3 mx-2" />
-        <span className="text-foreground font-medium truncate">{data?.name}</span>
       </nav>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 p-6 md:p-10">
@@ -289,19 +313,43 @@ export const ProductView = ({ productId }: ProductViewProps) => {
           {/* Action buttons */}
           <div className="flex flex-col sm:flex-row gap-3">
             <button 
-              className="flex-1 py-6 px-4 flex items-center justify-center rounded-md bg-gray-50 font-medium relative overflow-hidden group"
+              className={`flex-1 py-6 px-4 flex items-center justify-center rounded-md font-medium relative overflow-hidden group ${
+                !session?.user && !isInCart ? 'bg-black text-white' : 'bg-gray-50'
+              }`}
               style={{ 
                 transition: 'all 0.3s ease',
                 position: 'relative',
                 zIndex: 1
               }}
+              onClick={() => {
+                if (isInCart) {
+                  // Navigate to cart page if product is already in cart
+                  router.push('/cart');
+                } else if (data) {
+                  // If logged in, add product to cart
+                  if (session?.user) {
+                    addItem(data, quantity);
+                  } else {
+                    // If not logged in, redirect directly to sign-in page
+                    router.push("/sign-in");
+                  }
+                }
+              }}
             >
               <span 
-                className="absolute top-0 left-0 w-0 h-full bg-black transition-all duration-300 ease-out group-hover:w-full -z-10"
+                className={`absolute top-0 left-0 w-0 h-full transition-all duration-300 ease-out ${
+                  session?.user || isInCart ? 'bg-black group-hover:w-full' : 'bg-primary group-hover:w-full'
+                } -z-10`}
                 style={{ transformOrigin: 'left' }}
               ></span>
-              <ShoppingCart className="mr-2 h-5 w-5 relative z-10 group-hover:text-white transition-colors duration-300" />
-              <span className="relative z-10 group-hover:text-white transition-colors duration-300">Add to Cart</span>
+              {isInCart || session?.user ? (
+                <ShoppingCart className="mr-2 h-5 w-5 relative z-10 group-hover:text-white transition-colors duration-300" />
+              ) : (
+                <LogIn className="mr-2 h-5 w-5 relative z-10 group-hover:text-white transition-colors duration-300" />
+              )}
+              <span className="relative z-10 group-hover:text-white transition-colors duration-300">
+                {isInCart ? "Go to Cart" : session?.user ? "Add to Cart" : "Sign in to Add"}
+              </span>
             </button>
             <button 
               className="flex-1 py-6 px-4 flex items-center justify-center rounded-md bg-black text-white font-medium relative overflow-hidden group"
@@ -310,12 +358,31 @@ export const ProductView = ({ productId }: ProductViewProps) => {
                 position: 'relative',
                 zIndex: 1
               }}
+              onClick={() => {
+                if (!session?.user) {
+                  // If not logged in, redirect to sign-in page
+                  router.push('/sign-in');
+                  return;
+                }
+                
+                if (data) {
+                  // Create URLSearchParams with product info
+                  const params = new URLSearchParams();
+                  params.set('productId', data.id);
+                  params.set('quantity', quantity.toString());
+                  
+                  // Redirect to direct checkout page with this product
+                  router.push(`/direct-checkout?${params.toString()}`);
+                }
+              }}
             >
               <span 
                 className="absolute top-0 left-0 w-0 h-full bg-white transition-all duration-300 ease-out group-hover:w-full -z-10"
                 style={{ transformOrigin: 'left' }}
               ></span>
-              <span className="relative z-10 group-hover:text-black transition-colors duration-300">Buy Now</span>
+              <span className="relative z-10 group-hover:text-black transition-colors duration-300">
+                {session?.user ? "Buy Now" : "Sign in to Buy"}
+              </span>
             </button>
           </div>
           

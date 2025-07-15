@@ -36,18 +36,15 @@ export const SearchInput = ({
             >
                 <ListFilterIcon/>
             </Button>
-            {session.data?.user && (
-                <Button
+            <Button
                 asChild
                 variant="elevated"
                 >
-                    <Link href="/library"> 
-                        <ShoppingBasketIcon className="mr-2"/>
-                        Cart
-                    </Link>
-                </Button>
-
-            )}
+                <Link href="/cart"> 
+                    <ShoppingBasketIcon className="mr-2"/>
+                    Cart
+                </Link>
+            </Button>
         </div>
     );
 }

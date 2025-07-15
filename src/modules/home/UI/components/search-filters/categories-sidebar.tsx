@@ -57,7 +57,7 @@ export const CategoriesSidebar = ({
             }
             else {
                 if(category.slug === "all") {
-                    router.push("/");
+                    router.push("/products");
                 }else {
                     router.push(`/${category.slug}`);
                 }
