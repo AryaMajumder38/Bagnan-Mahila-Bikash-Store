@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -24,6 +25,9 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { useTRPC } from "@/trpc/client";
+import { useCart } from "@/modules/cart/context/cart-context";
+import { useDirectCheckout } from "@/modules/checkout/context/direct-checkout-context";
 
 // Define form schema with Zod
 const checkoutSchema = z.object({
@@ -92,8 +96,27 @@ const conditionalCheckoutSchema = z.discriminatedUnion("sameAsShipping", [
 
 type CheckoutFormValues = z.infer<typeof conditionalCheckoutSchema>;
 
-export function CheckoutForm() {
+interface CheckoutFormProps {
+  items: Array<{
+    product: any & {
+      selectedVariant?: {
+        name: string;
+        price: number;
+        stock: number;
+      } | null;
+    };
+    quantity: number;
+  }>;
+  total: number;
+}
+
+export function CheckoutForm({ items, total }: CheckoutFormProps) {
   const [sameAsShipping, setSameAsShipping] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { clearCart } = useCart();
+  const { clearDirectCheckoutItem } = useDirectCheckout();
+  const router = useRouter();
+  const trpc = useTRPC();
 
   // Initialize form with react-hook-form
   const form = useForm<CheckoutFormValues>({
@@ -119,13 +142,122 @@ export function CheckoutForm() {
   });
 
   const handleSubmit = async (values: CheckoutFormValues) => {
-    // This would typically send the form data to your backend
-    console.log(values);
-    
-    // Simulate success
-    toast.success("Order placed successfully!", {
-      description: "Thank you for your purchase!",
-    });
+    try {
+      setIsSubmitting(true);
+      
+      // Calculate subtotal, tax, and shipping costs
+      const subtotal = items.reduce((sum, item) => {
+        const price = item.product.selectedVariant?.price || item.product.price || 0;
+        return sum + (price * item.quantity);
+      }, 0);
+      const tax = subtotal * 0.05; // 5% tax
+      const shippingCost = subtotal > 1000 ? 0 : 100; // Free shipping for orders over ₹1000
+      
+      // Format items for API
+      const orderItems = items.map(item => ({
+        productId: item.product.id,
+        quantity: item.quantity,
+        price: item.product.selectedVariant?.price || item.product.price || 0,
+        variantName: item.product.selectedVariant?.name || null,
+      }));
+      
+      // Format billing address based on sameAsShipping
+      const billingAddress = values.sameAsShipping
+        ? { sameAsShipping: true }
+        : {
+            sameAsShipping: false,
+            address: values.billingAddress || "",
+            apartment: values.billingApartment,
+            city: values.billingCity || "",
+            state: values.billingState || "",
+            pinCode: values.billingPinCode || "",
+          };
+      
+      // Create order data
+      const orderData = {
+        items: orderItems,
+        subtotal,
+        tax,
+        shippingCost,
+        total: subtotal + tax + shippingCost,
+        customerInfo: {
+          firstName: values.firstName,
+          lastName: values.lastName,
+          email: values.email,
+          phone: values.phone,
+          company: values.company || "",
+        },
+        shippingAddress: {
+          address: values.shippingAddress,
+          apartment: values.shippingApartment || "",
+          city: values.shippingCity,
+          state: values.shippingState,
+          pinCode: values.shippingPinCode,
+        },
+        billingAddress,
+        paymentInfo: {
+          method: "cod", // Default to Cash on Delivery
+        },
+        notes: "", // Optional order notes
+      };
+      
+      console.log("Submitting order data:", orderData);
+      
+      // Use our simplified API endpoint
+      const response = await fetch('/api/simple-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderData
+        }),
+        credentials: 'include', // Important! This ensures cookies are sent with the request
+      });
+      
+      // First get the response text for debugging
+      const responseText = await response.text();
+      console.log("Raw response:", responseText);
+      
+      // Try to parse the JSON
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (e) {
+        console.error("Failed to parse response as JSON:", e);
+        throw new Error("Server returned invalid JSON response");
+      }
+      
+      if (!response.ok) {
+        console.error("Failed response:", result);
+        throw new Error(result.error || `Server returned ${response.status}: ${response.statusText}`);
+      }
+      
+      console.log("Order creation result:", result);
+      
+      if (result.success) {
+        // Clear cart and direct checkout item
+        clearCart();
+        clearDirectCheckoutItem();
+        
+        // Show success message
+        toast.success("Order placed successfully!", {
+          description: `Order #${result.orderNumber || result.orderId} has been received.`,
+        });
+        
+        // Redirect to order confirmation page
+        router.push(`/orders/${result.orderId}`);
+      } else {
+        throw new Error(result.error || 'Failed to create order');
+      }
+    } catch (error: any) {
+      console.error("Error creating order:", error);
+      toast.error("Failed to place order", {
+        description: error.message || "Please try again later",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

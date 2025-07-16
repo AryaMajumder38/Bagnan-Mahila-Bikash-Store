@@ -74,6 +74,7 @@ export interface Config {
     products: Product;
     tenants: Tenant;
     carts: Cart;
+    orders: Order;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -90,6 +91,7 @@ export interface Config {
     products: ProductsSelect<false> | ProductsSelect<true>;
     tenants: TenantsSelect<false> | TenantsSelect<true>;
     carts: CartsSelect<false> | CartsSelect<true>;
+    orders: OrdersSelect<false> | OrdersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -171,6 +173,13 @@ export interface User {
   hash?: string | null;
   loginAttempts?: number | null;
   lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
   password?: string | null;
 }
 /**
@@ -201,6 +210,13 @@ export interface Tenant {
   hash?: string | null;
   loginAttempts?: number | null;
   lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
   password?: string | null;
 }
 /**
@@ -276,7 +292,26 @@ export interface Product {
   tenant?: (string | null) | Tenant;
   name: string;
   description?: string | null;
-  price: number;
+  hasVariants?: boolean | null;
+  /**
+   * Base price for the product (only if no variants)
+   */
+  price?: number | null;
+  /**
+   * Add different variants of this product (e.g. sizes, weights)
+   */
+  variants?:
+    | {
+        /**
+         * E.g. '500g', '1kg', 'Small', 'Medium', etc.
+         */
+        name: string;
+        price: number;
+        sku?: string | null;
+        stock?: number | null;
+        id?: string | null;
+      }[]
+    | null;
   category: string | Category;
   /**
    * Main product image
@@ -316,6 +351,114 @@ export interface Cart {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders".
+ */
+export interface Order {
+  id: string;
+  tenants?:
+    | {
+        tenant: string | Tenant;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Unique order identifier
+   */
+  orderNumber: string;
+  /**
+   * User who placed the order
+   */
+  user: string | User;
+  /**
+   * Current status of the order
+   */
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  /**
+   * Products in this order
+   */
+  items: {
+    product: string | Product;
+    /**
+     * Number of units ordered
+     */
+    quantity: number;
+    /**
+     * Name of the product variant (if applicable)
+     */
+    variantName?: string | null;
+    /**
+     * Price at time of purchase (in rupees)
+     */
+    price: number;
+    id?: string | null;
+  }[];
+  /**
+   * Order subtotal before tax and shipping
+   */
+  subtotal: number;
+  /**
+   * Tax amount for this order
+   */
+  tax: number;
+  /**
+   * Shipping cost for this order
+   */
+  shippingCost: number;
+  /**
+   * Total order amount including tax and shipping
+   */
+  total: number;
+  /**
+   * Customer contact information
+   */
+  customerInfo: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    company?: string | null;
+  };
+  /**
+   * Address to ship the order to
+   */
+  shippingAddress: {
+    address: string;
+    apartment?: string | null;
+    city: string;
+    state: string;
+    pinCode: string;
+  };
+  /**
+   * Address for billing purposes
+   */
+  billingAddress: {
+    sameAsShipping?: boolean | null;
+    address?: string | null;
+    apartment?: string | null;
+    city?: string | null;
+    state?: string | null;
+    pinCode?: string | null;
+  };
+  /**
+   * Payment information
+   */
+  paymentInfo: {
+    method: 'cod' | 'credit' | 'upi' | 'netbanking';
+    /**
+     * Transaction ID for online payments
+     */
+    transactionId?: string | null;
+    status: 'pending' | 'completed' | 'failed' | 'refunded';
+  };
+  /**
+   * Order notes or special instructions
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -344,6 +487,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'carts';
         value: string | Cart;
+      } | null)
+    | ({
+        relationTo: 'orders';
+        value: string | Order;
       } | null);
   globalSlug?: string | null;
   user:
@@ -419,6 +566,13 @@ export interface UsersSelect<T extends boolean = true> {
   hash?: T;
   loginAttempts?: T;
   lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -494,7 +648,17 @@ export interface ProductsSelect<T extends boolean = true> {
   tenant?: T;
   name?: T;
   description?: T;
+  hasVariants?: T;
   price?: T;
+  variants?:
+    | T
+    | {
+        name?: T;
+        price?: T;
+        sku?: T;
+        stock?: T;
+        id?: T;
+      };
   category?: T;
   image?: T;
   hoverImage?: T;
@@ -526,6 +690,13 @@ export interface TenantsSelect<T extends boolean = true> {
   hash?: T;
   loginAttempts?: T;
   lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -540,6 +711,72 @@ export interface CartsSelect<T extends boolean = true> {
         quantity?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders_select".
+ */
+export interface OrdersSelect<T extends boolean = true> {
+  tenants?:
+    | T
+    | {
+        tenant?: T;
+        id?: T;
+      };
+  orderNumber?: T;
+  user?: T;
+  status?: T;
+  items?:
+    | T
+    | {
+        product?: T;
+        quantity?: T;
+        variantName?: T;
+        price?: T;
+        id?: T;
+      };
+  subtotal?: T;
+  tax?: T;
+  shippingCost?: T;
+  total?: T;
+  customerInfo?:
+    | T
+    | {
+        firstName?: T;
+        lastName?: T;
+        email?: T;
+        phone?: T;
+        company?: T;
+      };
+  shippingAddress?:
+    | T
+    | {
+        address?: T;
+        apartment?: T;
+        city?: T;
+        state?: T;
+        pinCode?: T;
+      };
+  billingAddress?:
+    | T
+    | {
+        sameAsShipping?: T;
+        address?: T;
+        apartment?: T;
+        city?: T;
+        state?: T;
+        pinCode?: T;
+      };
+  paymentInfo?:
+    | T
+    | {
+        method?: T;
+        transactionId?: T;
+        status?: T;
+      };
+  notes?: T;
   updatedAt?: T;
   createdAt?: T;
 }

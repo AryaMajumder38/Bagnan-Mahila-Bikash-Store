@@ -16,7 +16,13 @@ import { toast } from "sonner";
 const FALLBACK_IMAGE = "/image-placeholder.svg";
 
 export default function CartPage() {
-  const { items, updateItemQuantity, removeItem, clearCart, cartTotal } = useCart();
+  const { items, updateItemQuantity, removeItem, clearCart, cartTotal } = useCart() as {
+    items: CartItem[];
+    updateItemQuantity: (productId: string, variantName?: string, quantity?: number) => void;
+    removeItem: (productId: string, variantName?: string) => void;
+    clearCart: () => void;
+    cartTotal: number;
+  };
   const trpc = useTRPC();
   const router = useRouter();
   
@@ -186,8 +192,8 @@ export default function CartPage() {
 
 interface CartItemRowProps {
   item: CartItem;
-  updateQuantity: (productId: string, quantity: number) => void;
-  removeItem: (productId: string) => void;
+  updateQuantity: (productId: string, variantName?: string, quantity?: number) => void;
+  removeItem: (productId: string, variantName?: string) => void;
 }
 
 const CartItemRow = ({ item, updateQuantity, removeItem }: CartItemRowProps) => {
@@ -199,7 +205,9 @@ const CartItemRow = ({ item, updateQuantity, removeItem }: CartItemRowProps) => 
       ? product.image
       : FALLBACK_IMAGE;
 
-  const itemTotal = product.price * quantity;
+  // Calculate price based on variant if available
+  const price = product.selectedVariant?.price || product.price || 0;
+  const itemTotal = price * quantity;
 
   return (
     <li className="py-4 grid grid-cols-1 sm:grid-cols-8 gap-4 sm:gap-6 items-center">
@@ -218,7 +226,14 @@ const CartItemRow = ({ item, updateQuantity, removeItem }: CartItemRowProps) => 
         </div>
         <div className="flex-grow min-w-0">
           <Link href={`/products/${product.id}`} className="hover:text-primary transition-colors">
-            <h3 className="font-medium line-clamp-2">{product.name}</h3>
+            <h3 className="font-medium line-clamp-2">
+              {product.name}
+              {product.selectedVariant && (
+                <span className="text-sm text-muted-foreground ml-1">
+                  - {product.selectedVariant.name}
+                </span>
+              )}
+            </h3>
           </Link>
           {typeof product.category === 'object' && product.category && (
             <p className="text-sm text-muted-foreground mt-1">
@@ -229,7 +244,7 @@ const CartItemRow = ({ item, updateQuantity, removeItem }: CartItemRowProps) => 
             variant="ghost"
             size="sm"
             className="text-muted-foreground mt-1 h-auto p-0 sm:hidden"
-            onClick={() => removeItem(product.id)}
+            onClick={() => removeItem(product.id, product.selectedVariant?.name)}
           >
             <Trash2 className="h-3.5 w-3.5 mr-1" /> Remove
           </Button>
@@ -238,7 +253,7 @@ const CartItemRow = ({ item, updateQuantity, removeItem }: CartItemRowProps) => 
 
       <div className="col-span-1 sm:text-center">
         <div className="text-sm sm:hidden mb-1">Price:</div>
-        {formatPrice(product.price)}
+        {formatPrice(price)}
       </div>
 
       <div className="col-span-1 sm:col-span-2 flex items-center sm:justify-center">
@@ -248,7 +263,7 @@ const CartItemRow = ({ item, updateQuantity, removeItem }: CartItemRowProps) => 
             variant="ghost"
             size="icon"
             className="h-8 w-8 rounded-none rounded-l-md"
-            onClick={() => updateQuantity(product.id, Math.max(1, quantity - 1))}
+            onClick={() => updateQuantity(product.id, product.selectedVariant?.name, Math.max(1, quantity - 1))}
             disabled={quantity <= 1}
           >
             <Minus className="h-3 w-3" />
@@ -259,7 +274,7 @@ const CartItemRow = ({ item, updateQuantity, removeItem }: CartItemRowProps) => 
             variant="ghost"
             size="icon"
             className="h-8 w-8 rounded-none rounded-r-md"
-            onClick={() => updateQuantity(product.id, quantity + 1)}
+            onClick={() => updateQuantity(product.id, product.selectedVariant?.name, quantity + 1)}
           >
             <Plus className="h-3 w-3" />
             <span className="sr-only">Increase quantity</span>
@@ -276,7 +291,7 @@ const CartItemRow = ({ item, updateQuantity, removeItem }: CartItemRowProps) => 
           variant="ghost"
           size="icon"
           className="ml-2 h-8 w-8 text-muted-foreground hidden sm:flex"
-          onClick={() => removeItem(product.id)}
+          onClick={() => removeItem(product.id, product.selectedVariant?.name)}
         >
           <Trash2 className="h-4 w-4" />
           <span className="sr-only">Remove</span>

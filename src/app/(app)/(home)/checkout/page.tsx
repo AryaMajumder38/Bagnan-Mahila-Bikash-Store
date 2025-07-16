@@ -106,7 +106,7 @@ export default function CheckoutPage() {
               Back to Cart
             </Link>
           </Button>
-          <CheckoutForm />
+          <CheckoutForm items={items} total={cartTotal} />
         </div>
         
         {/* Order summary - right side */}

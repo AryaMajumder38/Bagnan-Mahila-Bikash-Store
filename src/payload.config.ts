@@ -14,6 +14,7 @@ import { Categories } from './collections/categories'
 import { Products } from './collections/Products'
 import { Tenants } from './collections/Tenants'
 import Carts from './collections/Carts'
+import { Orders } from './collections/Orders'
 import { Config } from './payload-types'
 
 const filename = fileURLToPath(import.meta.url)
@@ -27,7 +28,7 @@ export default buildConfig({
       importMapFile: path.resolve(dirname, './app/(payload)/admin/importMap.js'),
     },
   },
-  collections: [Users, Media, Categories, Products, Tenants, Carts],
+  collections: [Users, Media, Categories, Products, Tenants, Carts, Orders],
   cookiePrefix: "funroad",
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

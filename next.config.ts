@@ -27,9 +27,8 @@ const nextConfig: NextConfig = {
       }
     ];
   },
-  experimental: {
-    serverComponentsExternalPackages: ['sharp', 'payload'],
-  },
+  serverExternalPackages: ['sharp', 'payload'],
+  transpilePackages: ['@payloadcms/next'],
 };
 
 export default withPayload(nextConfig);

@@ -33,10 +33,17 @@ export function OrderSummary({ items, total }: OrderSummaryProps) {
               />
             </div>
             <div className="flex-grow">
-              <p className="font-medium">{item.product.name}</p>
+              <p className="font-medium">
+                {item.product.name}
+                {item.product.selectedVariant && (
+                  <span className="text-sm text-gray-500 ml-1">
+                    - {item.product.selectedVariant.name}
+                  </span>
+                )}
+              </p>
               <div className="flex items-center justify-between mt-1">
                 <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
-                <p className="font-medium">{formatPrice(item.product.price * item.quantity)}</p>
+                <p className="font-medium">{formatPrice((item.product.selectedVariant?.price || item.product.price || 0) * item.quantity)}</p>
               </div>
             </div>
           </div>

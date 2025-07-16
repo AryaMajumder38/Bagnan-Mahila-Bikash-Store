@@ -7,17 +7,27 @@ import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
 
 // Define the cart item type which extends the Product type with quantity
+// Define a variant type
+export interface ProductVariant {
+  name: string;
+  price: number;
+  sku?: string;
+  stock: number;
+}
+
 export interface CartItem {
-  product: Product;
+  product: Product & { 
+    selectedVariant?: ProductVariant | null;
+  };
   quantity: number;
 }
 
 // Define the cart context type
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product, quantity: number) => void;
-  updateItemQuantity: (productId: string, quantity: number) => void;
-  removeItem: (productId: string) => void;
+  addItem: (product: Product & { selectedVariant?: ProductVariant | null }, quantity: number) => void;
+  updateItemQuantity: (productId: string, variantName?: string, quantity?: number) => void;
+  removeItem: (productId: string, variantName?: string) => void;
   clearCart: () => void;
   isOpen: boolean;
   openCart: () => void;
@@ -82,7 +92,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items, mounted, session?.user?.id]);
 
   // Add item to cart
-  const addItem = (product: Product, quantity: number) => {
+  const addItem = (product: Product & { selectedVariant?: ProductVariant | null }, quantity: number) => {
     // Check if user is logged in
     if (!session?.user) {
       toast.error("Please sign in", {
@@ -97,33 +107,51 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     setItems((prevItems) => {
       // Check if product already exists in cart
-      const existingItem = prevItems.find(
-        (item) => item.product.id === product.id
-      );
+      // For products with variants, check both product ID and variant name
+      const existingItem = prevItems.find(item => {
+        // If both have variants selected, match by product ID and variant name
+        if (item.product.selectedVariant && product.selectedVariant) {
+          return item.product.id === product.id && 
+                 item.product.selectedVariant.name === product.selectedVariant.name;
+        }
+        // If neither have variants, match just by product ID
+        if (!item.product.selectedVariant && !product.selectedVariant) {
+          return item.product.id === product.id;
+        }
+        // One has variant and the other doesn't, so they don't match
+        return false;
+      });
 
       if (existingItem) {
-        // Update quantity if product already exists
-        return prevItems.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
+        // Update quantity if product with same variant already exists
+        return prevItems.map((item) => {
+          // Check if this is the item to update
+          if ((item.product.selectedVariant && product.selectedVariant &&
+               item.product.id === product.id && 
+               item.product.selectedVariant.name === product.selectedVariant.name) ||
+              (!item.product.selectedVariant && !product.selectedVariant && 
+               item.product.id === product.id)) {
+            return { ...item, quantity: item.quantity + quantity };
+          }
+          return item;
+        });
       } else {
         // Add new product to cart
         return [...prevItems, { product, quantity }];
       }
     });
 
+    const variantInfo = product.selectedVariant ? ` (${product.selectedVariant.name})` : '';
     toast.success("Item added to cart", {
-      description: `${quantity} × ${product.name} added to your cart`,
+      description: `${quantity} × ${product.name}${variantInfo} added to your cart`,
     });
 
     // Open cart drawer when adding item
     setIsOpen(true);
   };
 
-  // Update item quantity
-  const updateItemQuantity = (productId: string, quantity: number) => {
+  // Update item quantity - now supports variants
+  const updateItemQuantity = (productId: string, variantName?: string, quantity: number = 0) => {
     // Check if user is logged in
     if (!session?.user) {
       toast.error("Please sign in", {
@@ -137,19 +165,32 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
     
     if (quantity <= 0) {
-      removeItem(productId);
+      removeItem(productId, variantName);
       return;
     }
 
     setItems((prevItems) =>
-      prevItems.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item
-      )
+      prevItems.map((item) => {
+        // For items with variants, match both product ID and variant name
+        if (variantName && item.product.selectedVariant) {
+          if (item.product.id === productId && item.product.selectedVariant.name === variantName) {
+            return { ...item, quantity };
+          }
+          return item;
+        }
+        
+        // For items without variants, just match product ID
+        if (!variantName && !item.product.selectedVariant && item.product.id === productId) {
+          return { ...item, quantity };
+        }
+        
+        return item;
+      })
     );
   };
 
-  // Remove item from cart
-  const removeItem = (productId: string) => {
+  // Remove item from cart - now supports variants
+  const removeItem = (productId: string, variantName?: string) => {
     // Check if user is logged in
     if (!session?.user) {
       toast.error("Please sign in", {
@@ -162,7 +203,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return;
     }
     
-    setItems((prevItems) => prevItems.filter((item) => item.product.id !== productId));
+    setItems((prevItems) => prevItems.filter((item) => {
+      // For items with variants, match both product ID and variant name
+      if (variantName && item.product.selectedVariant) {
+        return !(item.product.id === productId && 
+                item.product.selectedVariant.name === variantName);
+      }
+      
+      // For items without variants, just match product ID
+      if (!variantName && !item.product.selectedVariant) {
+        return item.product.id !== productId;
+      }
+      
+      // If we're looking for non-variant but item has variant (or vice versa), keep the item
+      return true;
+    }));
+    
     toast.info("Item removed from cart");
   };
 
@@ -191,10 +247,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const closeCart = () => setIsOpen(false);
 
   // Calculate total price of all items in cart
-  const cartTotal = items.reduce(
-    (total, item) => total + item.product.price * item.quantity,
-    0
-  );
+  const cartTotal = items.reduce((total, item) => {
+    // Use variant price if available, otherwise fallback to product price
+    const price = item.product.selectedVariant?.price || item.product.price || 0;
+    return total + price * item.quantity;
+  }, 0);
 
   // Calculate total number of items in cart
   const cartCount = items.reduce((count, item) => count + item.quantity, 0);

@@ -36,10 +36,66 @@ export const Products: CollectionConfig = {
       }
     },
     {
+        name: "hasVariants",
+        type: "checkbox",
+        label: "This product has variants",
+        defaultValue: false,
+        hooks: {
+          beforeChange: [preserveFieldsOnImageUpload]
+        }
+    },
+    {
         name: "price",
         type: "number",
         required: true,
         min: 0,
+        admin: {
+          condition: (data) => !data.hasVariants,
+          description: "Base price for the product (only if no variants)"
+        },
+        hooks: {
+          beforeChange: [preserveFieldsOnImageUpload]
+        }
+    },
+    {
+        name: "variants",
+        type: "array",
+        label: "Product Variants",
+        admin: {
+          condition: (data) => data.hasVariants === true,
+          description: "Add different variants of this product (e.g. sizes, weights)"
+        },
+        fields: [
+          {
+            name: "name",
+            type: "text",
+            required: true,
+            label: "Variant Name",
+            admin: {
+              description: "E.g. '500g', '1kg', 'Small', 'Medium', etc."
+            }
+          },
+          {
+            name: "price",
+            type: "number",
+            required: true,
+            min: 0,
+            label: "Variant Price"
+          },
+          {
+            name: "sku",
+            type: "text",
+            label: "SKU (Stock Keeping Unit)",
+            unique: false
+          },
+          {
+            name: "stock",
+            type: "number",
+            defaultValue: 0,
+            min: 0,
+            label: "Stock Quantity"
+          }
+        ],
         hooks: {
           beforeChange: [preserveFieldsOnImageUpload]
         }

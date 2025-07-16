@@ -40,6 +40,7 @@ export const ProductView = ({ productId }: ProductViewProps) => {
   const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [isInCart, setIsInCart] = useState<boolean>(false);
+  const [selectedVariant, setSelectedVariant] = useState<any>(null);
 
   // Product data fetch
   const { data } = useSuspenseQuery(
@@ -57,6 +58,11 @@ export const ProductView = ({ productId }: ProductViewProps) => {
   // Process and set image URLs
   useEffect(() => {
     console.log("Processing product data:", data);
+    
+    // Set initial variant if product has variants
+    if (data?.hasVariants && Array.isArray(data.variants) && data.variants.length > 0) {
+      setSelectedVariant(data.variants[0]);
+    }
     
     if (data?.image) {
       const imgUrl = typeof data.image === 'string' 
@@ -253,14 +259,26 @@ export const ProductView = ({ productId }: ProductViewProps) => {
           
           {/* Price */}
           <div>
-            <div className="flex items-baseline">
-              <span className="text-3xl font-bold">Rs. {data?.price?.toFixed(2)}</span>
-              {/* If you want to show original price */}
-              <span className="ml-3 text-base text-muted-foreground line-through">Rs. {(data?.price * 1.2)?.toFixed(2)}</span>
-            </div>
-            <p className="text-sm text-green-600 mt-1">
-              Save 20% | Limited time offer
-            </p>
+            {data?.hasVariants && Array.isArray(data.variants) && data.variants.length > 0 ? (
+              <div>
+                <div className="flex items-baseline">
+                  <span className="text-3xl font-bold">Rs. {selectedVariant?.price?.toFixed(2) || data.variants[0]?.price?.toFixed(2)}</span>
+                  {/* Optional: Show original price for comparison */}
+                  <span className="ml-3 text-base text-muted-foreground line-through">
+                    Rs. {((selectedVariant?.price || data.variants[0]?.price || 0) * 1.2)?.toFixed(2)}
+                  </span>
+                </div>
+                <p className="text-sm text-green-600 mt-1">
+                  Save 20% | Limited time offer
+                </p>
+              </div>
+            ) : (
+              <div className="flex items-baseline">
+                <span className="text-3xl font-bold">Rs. {data?.price?.toFixed(2)}</span>
+                {/* If you want to show original price */}
+                <span className="ml-3 text-base text-muted-foreground line-through">Rs. {((data?.price || 0) * 1.2).toFixed(2)}</span>
+              </div>
+            )}
             <p className="text-sm text-muted-foreground mt-1">
               Tax included. Shipping calculated at checkout.
             </p>
@@ -268,15 +286,44 @@ export const ProductView = ({ productId }: ProductViewProps) => {
           
           <div className="h-px bg-gray-100 my-1"></div>
           
-          {/* Options: Weight, Size, etc. */}
-          <div>
-            <label className="block font-medium mb-2">Weight</label>
-            <div className="flex gap-2">
-              <span className="inline-block px-4 py-1.5 bg-gray-100 text-sm font-medium rounded-full">
-                200 gm
-              </span>
+          {/* Variants Selection */}
+          {data?.hasVariants && Array.isArray(data.variants) && data.variants.length > 0 ? (
+            <div>
+              <label className="block font-medium mb-2">Select Variant</label>
+              <div className="flex flex-wrap gap-2">
+                {data.variants.map((variant: any, index: number) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedVariant(variant)}
+                    className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all ${
+                      selectedVariant === variant 
+                        ? 'bg-primary text-white' 
+                        : 'bg-gray-100 hover:bg-gray-200'
+                    }`}
+                  >
+                    {variant.name} - Rs.{variant.price?.toFixed(2)}
+                  </button>
+                ))}
+              </div>
+              {selectedVariant && (
+                <p className="text-sm mt-2">
+                  {selectedVariant.stock > 0 
+                    ? <span className="text-green-600">In stock: {selectedVariant.stock} units</span>
+                    : <span className="text-rose-500">Out of stock</span>
+                  }
+                </p>
+              )}
             </div>
-          </div>
+          ) : (
+            <div>
+              <label className="block font-medium mb-2">Weight</label>
+              <div className="flex gap-2">
+                <span className="inline-block px-4 py-1.5 bg-gray-100 text-sm font-medium rounded-full">
+                  Standard
+                </span>
+              </div>
+            </div>
+          )}
           
           {/* Quantity selector */}
           <div>
@@ -326,9 +373,28 @@ export const ProductView = ({ productId }: ProductViewProps) => {
                   // Navigate to cart page if product is already in cart
                   router.push('/cart');
                 } else if (data) {
+                  // Check if we should use a variant price
+                  const productToAdd = {
+                    ...data,
+                    selectedVariant: null
+                  };
+                  
+                  // If the product has variants and one is selected, use that variant's information
+                  if (data.hasVariants && selectedVariant) {
+                    productToAdd.selectedVariant = selectedVariant;
+                    productToAdd.price = selectedVariant.price; // Override price with variant price
+                  }
+                  
                   // If logged in, add product to cart
                   if (session?.user) {
-                    addItem(data, quantity);
+                    addItem(productToAdd, quantity);
+                    
+                    // Show a toast notification with variant info if applicable
+                    if (selectedVariant) {
+                      toast.success(`Added to cart: ${data.name} - ${selectedVariant.name}`);
+                    } else {
+                      toast.success(`Added to cart: ${data.name}`);
+                    }
                   } else {
                     // If not logged in, redirect directly to sign-in page
                     router.push("/sign-in");
@@ -370,6 +436,11 @@ export const ProductView = ({ productId }: ProductViewProps) => {
                   const params = new URLSearchParams();
                   params.set('productId', data.id);
                   params.set('quantity', quantity.toString());
+                  
+                  // Add variant info if selected
+                  if (selectedVariant) {
+                    params.set('variant', selectedVariant.name);
+                  }
                   
                   // Redirect to direct checkout page with this product
                   router.push(`/direct-checkout?${params.toString()}`);

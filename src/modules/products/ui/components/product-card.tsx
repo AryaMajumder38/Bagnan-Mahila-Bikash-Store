@@ -46,10 +46,23 @@ const ProductCard = ({ product }: ProductCardProps) => {
     ? (product.category as any).name
     : 'Uncategorized';
     
+  // Check if product has variants
+  const hasVariants = product.hasVariants || false;
+  const variants = product.variants || [];
+  
+  // Get the minimum price from variants or use the base price
+  const minPrice = hasVariants && variants.length > 0
+    ? Math.min(...variants.map((variant: any) => variant.price))
+    : product.price;
+    
   // Debug logs
   console.log('Product data:', {
     id: product.id,
     name: product.name,
+    hasVariants,
+    variants: variants.length,
+    price: product.price,
+    minPrice,
     imageRaw: product.image,
     imageUrl,
     hoverImageRaw: product.hoverImage,
@@ -144,7 +157,18 @@ const ProductCard = ({ product }: ProductCardProps) => {
       </CardContent>
       
       <CardFooter className="p-3 pt-1 flex items-center justify-between">
-        <p className="font-semibold text-sm">${product.price.toFixed(2)}</p>
+        <div>
+          {hasVariants ? (
+            <p className="font-semibold text-sm">
+              ₹{minPrice?.toFixed(2)} {variants.length > 0 && <span className="text-xs text-muted-foreground">+</span>}
+            </p>
+          ) : (
+            <p className="font-semibold text-sm">₹{product.price?.toFixed(2) || '0.00'}</p>
+          )}
+          {hasVariants && variants.length > 0 && (
+            <p className="text-xs text-muted-foreground">{variants.length} variant{variants.length > 1 ? 's' : ''}</p>
+          )}
+        </div>
         <Badge variant={product.refundPolicy === 'No refund' ? 'destructive' : 'outline'} className="text-xs py-0 h-5">
           {product.refundPolicy || 'Standard'}
         </Badge>

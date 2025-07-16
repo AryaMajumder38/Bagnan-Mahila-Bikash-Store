@@ -31,12 +31,12 @@ export const CartDrawer = () => {
     cartCount,
   } = useCart();
 
-  const handleUpdateQuantity = (productId: string, quantity: number) => {
-    updateItemQuantity(productId, quantity);
+  const handleUpdateQuantity = (productId: string, variantName: string | undefined, quantity: number) => {
+    updateItemQuantity(productId, variantName, quantity);
   };
 
-  const handleRemoveItem = (productId: string) => {
-    removeItem(productId);
+  const handleRemoveItem = (productId: string, variantName: string | undefined) => {
+    removeItem(productId, variantName);
   };
 
   return (
@@ -117,11 +117,14 @@ export const CartDrawer = () => {
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm line-clamp-2">
                           {item.product.name}
+                          {item.product.selectedVariant && (
+                            <span className="text-muted-foreground"> - {item.product.selectedVariant.name}</span>
+                          )}
                         </h4>
 
                         <div className="mt-1.5 flex justify-between items-center">
                           <p className="text-sm font-medium">
-                            {formatPrice(item.product.price)}
+                            {formatPrice(item.product.selectedVariant?.price || item.product.price || 0)}
                           </p>
                           <div className="flex items-center gap-2">
                             <Button
@@ -131,6 +134,7 @@ export const CartDrawer = () => {
                               onClick={() =>
                                 handleUpdateQuantity(
                                   item.product.id,
+                                  item.product.selectedVariant?.name,
                                   item.quantity - 1
                                 )
                               }
@@ -148,6 +152,7 @@ export const CartDrawer = () => {
                               onClick={() =>
                                 handleUpdateQuantity(
                                   item.product.id,
+                                  item.product.selectedVariant?.name,
                                   item.quantity + 1
                                 )
                               }
@@ -163,7 +168,7 @@ export const CartDrawer = () => {
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7"
-                        onClick={() => handleRemoveItem(item.product.id)}
+                        onClick={() => handleRemoveItem(item.product.id, item.product.selectedVariant?.name)}
                       >
                         <Trash2 className="h-4 w-4" />
                         <span className="sr-only">Remove</span>

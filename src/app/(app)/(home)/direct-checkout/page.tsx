@@ -15,7 +15,7 @@ import { ArrowLeft, LogIn, ShoppingBag, CreditCard } from "lucide-react";
 import { CheckoutForm } from "@/modules/checkout/components/checkout-form";
 import { OrderSummary } from "@/modules/checkout/components/order-summary";
 import { Product } from "@/payload-types";
-import { CartItem } from "@/modules/cart/context/cart-context";
+import { CartItem, ProductVariant } from "@/modules/cart/context/cart-context";
 
 export default function DirectCheckoutPage() {
   const { items: cartItems, cartTotal } = useCart();
@@ -26,6 +26,7 @@ export default function DirectCheckoutPage() {
   const searchParams = useSearchParams();
   const productId = searchParams.get("productId");
   const quantity = searchParams.get("quantity") ? parseInt(searchParams.get("quantity") as string, 10) : 1;
+  const variantName = searchParams.get("variant");
   
   const trpc = useTRPC();
   const router = useRouter();
@@ -46,13 +47,40 @@ export default function DirectCheckoutPage() {
   // Determine which items to show in checkout
   useEffect(() => {
     if (productData) {
-      // If product is in URL params, use it for direct checkout
-      setCheckoutItems([{ product: productData as Product, quantity }]);
-      setCheckoutTotal((productData as Product).price * quantity);
+      // Get the product and find the selected variant if any
+      const product = productData as Product;
+      let selectedVariant: ProductVariant | null = null;
+      
+      if (variantName && Array.isArray(product.variants)) {
+        const foundVariant = product.variants.find(v => v.name === variantName);
+        if (foundVariant) {
+          selectedVariant = foundVariant as unknown as ProductVariant;
+        }
+      }
+      
+      // Create an enhanced product with the selected variant
+      const enhancedProduct = {
+        ...product,
+        selectedVariant
+      };
+      
+      // Set checkout items with the enhanced product
+      setCheckoutItems([{ 
+        product: enhancedProduct, 
+        quantity 
+      }]);
+      
+      // Use variant price if available, otherwise use product price
+      const price = selectedVariant?.price || product.price || 0;
+      setCheckoutTotal(price * quantity);
     } else if (directItem) {
       // If direct checkout item is in context, use it
       setCheckoutItems([directItem]);
-      setCheckoutTotal(directItem.product.price * directItem.quantity);
+      
+      // Use variant price if available, otherwise use product price
+      const price = directItem.product.selectedVariant?.price || 
+                    directItem.product.price || 0;
+      setCheckoutTotal(price * directItem.quantity);
     } else {
       // Otherwise use the cart items
       setCheckoutItems(cartItems);
@@ -144,7 +172,7 @@ export default function DirectCheckoutPage() {
               {productData || directItem ? "Back to Products" : "Back to Cart"}
             </Link>
           </Button>
-          <CheckoutForm />
+          <CheckoutForm items={checkoutItems} total={checkoutTotal} />
         </div>
         
         {/* Order summary - right side */}
@@ -154,6 +182,7 @@ export default function DirectCheckoutPage() {
             form="checkout-form"
             type="submit"
             className="w-full mt-4 py-6 bg-black hover:bg-gray-800 text-white font-medium"
+            disabled={isProductLoading || checkoutItems.length === 0}
           >
             <CreditCard className="mr-2 h-5 w-5" />
             Pay Now - {formatPrice(checkoutTotal)}

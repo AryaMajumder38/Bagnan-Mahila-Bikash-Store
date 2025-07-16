@@ -3,9 +3,14 @@
 import { Product } from "@/payload-types";
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
+// Import the ProductVariant type from cart context
+import { ProductVariant } from "@/modules/cart/context/cart-context";
+
 // Define the interface for direct checkout
 interface DirectCheckoutItem {
-  product: Product;
+  product: Product & {
+    selectedVariant?: ProductVariant | null;
+  };
   quantity: number;
 }
 
@@ -23,7 +28,10 @@ export function DirectCheckoutProvider({ children }: { children: ReactNode }) {
   const [item, setItem] = useState<DirectCheckoutItem | null>(null);
   
   // Set a direct checkout item
-  const setDirectCheckoutItem = (product: Product, quantity: number) => {
+  const setDirectCheckoutItem = (
+    product: Product & { selectedVariant?: ProductVariant | null }, 
+    quantity: number
+  ) => {
     setItem({ product, quantity });
   };
   
