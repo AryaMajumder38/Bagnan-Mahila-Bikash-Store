@@ -11,265 +11,126 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  ChevronDown,
-  Menu,
-  X,
-  ShoppingCart,
-  LogIn,
-  UserPlus,
-  User,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Poppins } from "next/font/google";
+// Updated icon import to use ShoppingBag
+import { Menu, ShoppingBag, User } from "lucide-react";
 import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
-import { ReactNode } from "react";
 import { useCart } from "@/modules/cart/context/cart-context";
-
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["700"],
-});
-
-interface NavbarItemProps {
-  href: string;
-  children: ReactNode;
-  isActive: boolean;
-}
-
-const NavbarItem = ({ href, children, isActive }: NavbarItemProps) => {
-  return (
-    <Button
-      asChild
-      variant="outline"
-      className={cn(
-        "bg-transparent hover:bg-transparent rounded-full hover:border-primary border-transparent px-3.5 text-lg",
-        isActive && "bg-black text-white hover:bg-black hover:text-white"
-      )}
-    >
-      <Link href={href}>{children}</Link>
-    </Button>
-  );
-};
-
-const NavbarItems = [
-  { href: "/", children: "Home" },
-  { href: "/about", children: "About" },
-  { href: "/contact", children: "Contact" },
-  { href: "/features", children: "Features" },
-];
+import { CategoriesSidebar } from "@/modules/home/UI/components/search-filters/categories-sidebar";
 
 const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // State for the categories sidebar, triggered by the left hamburger menu
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const pathname = usePathname();
+  
   const router = useRouter();
   const trpc = useTRPC();
   const session = useQuery(trpc.auth.session.queryOptions());
   const { cartCount, openCart } = useCart();
-  
+
   const navigateToAccount = () => {
     router.push('/account/profile');
   };
 
+  const user = session.data?.user;
+  const userInitials = user?.email ? user.email.substring(0, 2).toUpperCase() : "U";
+
   return (
-    <header className="bg-white shadow-sm border-b border-earth-200 sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          {/* Website Logo-like Button (Amazon style) */}
-          <Link href="/" className="flex items-center">
-            <div className="flex items-center justify-center px-2 py-1">
-              <span className={cn("text-2xl font-bold text-black mr-1", poppins.className)}>SEVA</span>
-              <span className={cn("text-2xl font-bold text-black mr-1", poppins.className)}>WINGS</span>
-            </div>
-          </Link>
+    <header className="bg-white sticky top-0 z-50">
+      {/* Thin top border line as seen in the design */}
+      <div className="h-0.5 bg-gray-200"></div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8">
-            {NavbarItems.map((item) => (
-              <NavbarItem
-                key={item.href}
-                href={item.href}
-                isActive={pathname === item.href}
-              >
-                {item.children}
-              </NavbarItem>
-            ))}
+      {/* Categories Sidebar (functionality retained from original code) */}
+      <CategoriesSidebar 
+        open={isSidebarOpen} 
+        onOpenChange={(open) => {
+          // Only update state if the value is actually different
+          if (open !== isSidebarOpen) {
+            setIsSidebarOpen(open);
+          }
+        }} 
+      />
+      
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative flex items-center justify-between h-20">
+          
+          {/* Left Section: Hamburger Menu for Sidebar */}
+          <Button
+            variant="ghost"
+            onClick={() => setIsSidebarOpen(true)}
+            aria-label="Open menu"
+            className="hover:bg-transparent"
+          >
+            <Menu className="h-6 w-6 text-black" />
+          </Button>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center space-x-1 text-sage-700 hover:text-sage-800 font-medium transition-colors">
-                <span>Shop</span>
-                <ChevronDown className="h-4 w-4" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-white border border-earth-200 shadow-lg">
-                <DropdownMenuItem className="text-sage-700 hover:bg-earth-100" asChild>
-                  <Link href="/products">All Products</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-sage-700 hover:bg-earth-100">
-                  Clothes
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-sage-700 hover:bg-earth-100">
-                  Spices
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-sage-700 hover:bg-earth-100">
-                  Household Products
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          {/* Center Section: Logo */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <Link href="/" className="flex flex-col items-center" aria-label="Back to homepage">
+              {/* Placeholder for the oval logo from the image */}
+              <div className="h-10 w-5 bg-black rounded-full"></div>
+              <span className="text-xs font-medium tracking-widest text-gray-700 mt-1">
+                Apna Bazar
+              </span>
+            </Link>
+          </div>
 
-            <Button
-              variant="outline"
-              className="border-terracotta-400 text-terracotta-600 hover:bg-terracotta-50"
-            >
-              Donate
-            </Button>
-          </nav>
-
-          {/* Right Side */}
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            {session.data?.user ? (
-              <>
-                <Button
-                  asChild
-                  className="hidden lg:flex border-l border-t-0 border-b-0 border-r-0 px-8 h-full rounded-none bg-black text-white hover:bg-red-400 hover:text-black transition-colors text-lg"
-                >
-                  <Link href="/admin">Dashboard</Link>
-                </Button>
-                <Button
-                  onClick={navigateToAccount}
-                  className="hidden lg:flex border-l border-t-0 border-b-0 border-r-0 px-8 h-full rounded-none bg-sage-600 text-white hover:bg-sage-700 hover:text-white transition-colors text-lg"
-                >
-                  <User className="mr-2 h-5 w-5" />
-                  My Account
-                </Button>
-                <LogoutButton />
-              </>
+          {/* Right Section: User and Cart Icons */}
+          <div className="flex items-center justify-end space-x-2 sm:space-x-4">
+            {/* User Icon and Dropdown */}
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" aria-label="User account" className="hover:bg-transparent">
+                     <User className="h-6 w-6 text-black" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={navigateToAccount}>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>My Account</span>
+                  </DropdownMenuItem>
+                   {/* Optional: Add a link to the admin dashboard if it exists */}
+                  <DropdownMenuItem onClick={() => router.push('/admin')}>
+                    <span>Dashboard</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <LogoutButton />
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
-              <div className="hidden lg:flex">
-                <Button
-                  asChild
-                  variant="secondary"
-                  className="border-l border-t-0 border-b-0 border-r-0 px-12 h-full rounded-none bg-white hover:bg-red-400 transition-colors text-lg"
-                >
-                  <Link href="/sign-in">Login</Link>
+              // If logged out, show a user icon that links to the sign-in page
+              <Link href="/sign-in" aria-label="Sign in">
+                <Button variant="ghost" className="hover:bg-transparent">
+                  <User className="h-6 w-6 text-black" />
                 </Button>
-                <Button
-                  asChild
-                  className="border-l border-t-0 border-b-0 border-r-0 px-12 h-full rounded-none bg-black text-white hover:bg-red-400 hover:text-black transition-colors text-lg"
-                >
-                  <Link href="/sign-up">Register</Link>
-                </Button>
-              </div>
+              </Link>
             )}
-
-            <div className="relative">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative h-8 w-8 sm:h-10 sm:w-10"
-                onClick={openCart}
-              >
-                <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-sage-700" />
-                {cartCount > 0 && (
-                  <Badge className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center p-0 bg-terracotta-500 text-white text-xs">
-                    {cartCount}
-                  </Badge>
-                )}
-              </Button>
-            </div>
-
-            {session.data?.user && (
-              <Avatar 
-                onClick={navigateToAccount}
-                className="hidden sm:flex h-8 w-8 sm:h-10 sm:w-10 ring-2 ring-sage-200 cursor-pointer hover:ring-sage-400 transition-all"
-              >
-                <AvatarImage
-                  src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face"
-                  alt="User"
-                />
-                <AvatarFallback className="bg-sage-100 text-sage-700">
-                  {session.data.user.email ? session.data.user.email.substring(0, 2).toUpperCase() : "U"}
-                </AvatarFallback>
-              </Avatar>
-            )}
-
+            
+            {/* Cart Icon - Swapped to ShoppingBag */}
             <Button
               variant="ghost"
-              className="lg:hidden size-12 border-transparent hover:bg-transparent bg-white"
-              onClick={() => setIsMenuOpen(true)}
+              className="relative hover:bg-transparent"
+              onClick={openCart}
+              aria-label={`Shopping cart with ${cartCount} items`}
             >
-              <Menu />
+              <ShoppingBag className="h-6 w-6 text-black" />
+              {cartCount > 0 && (
+                <Badge 
+                  variant="destructive" 
+                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                >
+                  {cartCount}
+                </Badge>
+              )}
             </Button>
           </div>
         </div>
-
-        {isMenuOpen && (
-          <nav className="lg:hidden mt-4 pb-4 border-t border-earth-200 pt-4">
-            <div className="flex flex-col space-y-3">
-              {NavbarItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="text-sage-700 hover:text-sage-800 font-medium"
-                >
-                  {item.children}
-                </Link>
-              ))}
-              <div className="space-y-2">
-                <div className="text-sage-700 font-medium">Shop</div>
-                <div className="ml-4 space-y-2">
-                  <Link
-                    href="/products"
-                    className="block text-sage-600 hover:text-sage-800"
-                  >
-                    All Products
-                  </Link>
-                  <Link
-                    href="#"
-                    className="block text-sage-600 hover:text-sage-800"
-                  >
-                    Clothes
-                  </Link>
-                  <Link
-                    href="#"
-                    className="block text-sage-600 hover:text-sage-800"
-                  >
-                    Spices
-                  </Link>
-                  <Link
-                    href="#"
-                    className="block text-sage-600 hover:text-sage-800"
-                  >
-                    Household Products
-                  </Link>
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                className="border-terracotta-400 text-terracotta-600 hover:bg-terracotta-50 w-fit"
-              >
-                Donate
-              </Button>
-              
-              {session.data?.user && (
-                <Link
-                  href="/account/profile"
-                  className="flex items-center text-sage-700 hover:text-sage-800 font-medium"
-                >
-                  <User className="mr-2 h-4 w-4" />
-                  My Account
-                </Link>
-              )}
-            </div>
-          </nav>
-        )}
       </div>
     </header>
   );
 };
 
 export default Navbar;
-

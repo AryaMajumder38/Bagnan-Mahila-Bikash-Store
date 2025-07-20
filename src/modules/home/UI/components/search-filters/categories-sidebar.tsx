@@ -7,10 +7,18 @@ import {
     SheetHeader
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 
 import { useState } from "react";
 import { Chevron } from "react-day-picker";
-import { ChevronLeft, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { 
+    ChevronLeft, 
+    ChevronLeftIcon, 
+    ChevronRightIcon, 
+    ShoppingBag, 
+    Phone, 
+    Info
+} from "lucide-react";
 import { useRouter } from "next/navigation";  
 import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
@@ -33,86 +41,124 @@ export const CategoriesSidebar = ({
     const { data }= useQuery(trpc.categories.getMany.queryOptions());
 
     const router = useRouter();
-
-    const [parentCategories, setParentCategories] = useState<CategoriesGetManyOutput | null>(null);
-    const [selectedCategories, setSelectedCategories] = useState<CategoriesGetManyOutput[1] | null>(null);
-
-
-    const currentCategories = parentCategories ?? data ?? [];
+    
+    // Add state to track if we're showing the initial view or categories
+    const [showCategories, setShowCategories] = useState(false);
+    
+    // Get categories from query data
+    const categories = data ?? [];
+    
     const handleOpenChange = (open: boolean) => {
-        setSelectedCategories(null);
-        setParentCategories(null);
+        // Reset to initial view when sidebar closes
+        if (!open) {
+            setShowCategories(false);
+        }
+        
         if (onOpenChange) {
             onOpenChange(open);
         }
     }
+    
+    // Show all categories
+    const handleShowCategories = () => {
+        setShowCategories(true);
+    }
+    
+    // Go back to initial view
+    const handleBack = () => {
+        setShowCategories(false);
+    }
 
+    // Handle category selection
     const handleCategoryClick = (category: CategoriesGetManyOutput[1]) => {
-        if (category.subcategories && category.subcategories.length > 0) {
-            setParentCategories(category.subcategories as CategoriesGetManyOutput);
-            setSelectedCategories(category);
-        }else {
-            if(parentCategories && selectedCategories){
-                router.push(`/${selectedCategories.slug}/${category.slug}`);
-            }
-            else {
-                if(category.slug === "all") {
-                    router.push("/products");
-                }else {
-                    router.push(`/${category.slug}`);
-                }
-            }
-
-            handleOpenChange(false);
+        // Redirect to the category page
+        if (category.slug === "all") {
+            router.push("/products");
+        } else {
+            router.push(`/${category.slug}`);
         }
+        
+        // Close the sidebar after redirecting
+        handleOpenChange(false);
     }
 
-    const handleBackClick = () => {
-        if (parentCategories && parentCategories.length > 0) {
-            setParentCategories(null);
-            setSelectedCategories(null);
-        } 
-    }
-
-    const backgroundColor= selectedCategories?.color || "white";
+    const backgroundColor = "white";
 
     return(
         <Sheet open={open} onOpenChange={handleOpenChange} >
-
-           
             <SheetContent side="left" 
-            className="p-0 transition-none"
+            className="p-0 transition-none" 
             style={{backgroundColor: backgroundColor}}
             >
-                <SheetHeader className="p-4 border-b">
-                    <SheetTitle>Categories</SheetTitle>
-                </SheetHeader>
+                {/* Visually hidden title for accessibility */}
+                <VisuallyHidden>
+                    <SheetTitle>{showCategories ? "Categories" : "Menu"}</SheetTitle>
+                </VisuallyHidden>
+                
                 <ScrollArea
-                className="flex flex-col overflow-y-auto h-full pb-2" >
-                    {parentCategories && (
-                        <button
-                        onClick={handleBackClick}
-                        className="w-full text-left p-4 hover:bg-black hover:text-white flex items-center text-base font-medium "
-                        >
-                            <ChevronLeftIcon className="size-4 mr-2" />
-                            Back
-                        </button>
+                className="flex flex-col overflow-y-auto h-full pb-2 pt-4" >
+                    {showCategories ? (
+                        <>
+                            {/* Back button */}
+                            <button
+                                onClick={handleBack}
+                                className="w-full text-left p-4 hover:bg-black hover:text-white flex items-center text-base font-medium"
+                            >
+                                <ChevronLeftIcon className="size-4 mr-2" />
+                                Back
+                            </button>
+                            
+                            {/* Categories list */}
+                            {categories.map((category) => (
+                                <button
+                                    key={category.slug}
+                                    onClick={() => handleCategoryClick(category)}
+                                    className="w-full text-left p-4 hover:bg-black hover:text-white flex items-center text-base font-medium cursor-pointer"
+                                >
+                                    {category.name}
+                                </button>
+                            ))}
+                        </>
+                    ) : (
+                        <>
+                            {/* Initial view with Products, About Us, and Contact buttons */}
+                            <button
+                                onClick={handleShowCategories}
+                                className="w-full text-left p-4 hover:bg-black hover:text-white flex justify-between items-center text-base font-medium cursor-pointer"
+                            >
+                                <div className="flex items-center">
+                                    <ShoppingBag className="size-4 mr-2" />
+                                    Products
+                                </div>
+                                <ChevronRightIcon className="size-4" />
+                            </button>
+                            
+                            {/* About Us button */}
+                            <button
+                                onClick={() => {
+                                    router.push('/about-us');
+                                    handleOpenChange(false);
+                                }}
+                                className="w-full text-left p-4 hover:bg-black hover:text-white flex items-center text-base font-medium cursor-pointer"
+                            >
+                                <Info className="size-4 mr-2" />
+                                About Us
+                            </button>
+                            
+                            {/* Contact button */}
+                            <button
+                                onClick={() => {
+                                    router.push('/contact');
+                                    handleOpenChange(false);
+                                }}
+                                className="w-full text-left p-4 hover:bg-black hover:text-white flex items-center text-base font-medium cursor-pointer"
+                            >
+                                <Phone className="size-4 mr-2" />
+                                Contact
+                            </button>
+                        </>
                     )}
-                    {currentCategories.map((category) => (
-                        <button
-                        key={category.slug}
-                        onClick={() => handleCategoryClick(category)}
-                        className="w-full text-left p-4 hover:bg-black hover:text-white flex justify-between items-center text-base font-medium cursor-pointer"
-                        >
-                            {category.name}
-                            {category.subcategories && category.subcategories.length > 0 && (
-                                <ChevronRightIcon className="size-4 " />
-                            )}
-
-                        </button>
-                    ))}
-                    
-                    </ScrollArea>
+                </ScrollArea>
             </SheetContent>
         </Sheet>
     )
