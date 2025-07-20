@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LogoutButton } from "@/components/ui/logout-button";
@@ -20,6 +20,7 @@ import {
   ShoppingCart,
   LogIn,
   UserPlus,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Poppins } from "next/font/google";
@@ -65,9 +66,14 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const trpc = useTRPC();
   const session = useQuery(trpc.auth.session.queryOptions());
   const { cartCount, openCart } = useCart();
+  
+  const navigateToAccount = () => {
+    router.push('/account/profile');
+  };
 
   return (
     <header className="bg-white shadow-sm border-b border-earth-200 sticky top-0 z-50">
@@ -128,9 +134,16 @@ const Navbar = () => {
               <>
                 <Button
                   asChild
-                  className="hidden lg:flex border-l border-t-0 border-b-0 border-r-0 px-12 h-full rounded-none bg-black text-white hover:bg-red-400 hover:text-black transition-colors text-lg"
+                  className="hidden lg:flex border-l border-t-0 border-b-0 border-r-0 px-8 h-full rounded-none bg-black text-white hover:bg-red-400 hover:text-black transition-colors text-lg"
                 >
                   <Link href="/admin">Dashboard</Link>
+                </Button>
+                <Button
+                  onClick={navigateToAccount}
+                  className="hidden lg:flex border-l border-t-0 border-b-0 border-r-0 px-8 h-full rounded-none bg-sage-600 text-white hover:bg-sage-700 hover:text-white transition-colors text-lg"
+                >
+                  <User className="mr-2 h-5 w-5" />
+                  My Account
                 </Button>
                 <LogoutButton />
               </>
@@ -168,15 +181,20 @@ const Navbar = () => {
               </Button>
             </div>
 
-            <Avatar className="hidden sm:flex h-8 w-8 sm:h-10 sm:w-10 ring-2 ring-sage-200">
-              <AvatarImage
-                src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face"
-                alt="User"
-              />
-              <AvatarFallback className="bg-sage-100 text-sage-700">
-                JD
-              </AvatarFallback>
-            </Avatar>
+            {session.data?.user && (
+              <Avatar 
+                onClick={navigateToAccount}
+                className="hidden sm:flex h-8 w-8 sm:h-10 sm:w-10 ring-2 ring-sage-200 cursor-pointer hover:ring-sage-400 transition-all"
+              >
+                <AvatarImage
+                  src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face"
+                  alt="User"
+                />
+                <AvatarFallback className="bg-sage-100 text-sage-700">
+                  {session.data.user.email ? session.data.user.email.substring(0, 2).toUpperCase() : "U"}
+                </AvatarFallback>
+              </Avatar>
+            )}
 
             <Button
               variant="ghost"
@@ -235,6 +253,16 @@ const Navbar = () => {
               >
                 Donate
               </Button>
+              
+              {session.data?.user && (
+                <Link
+                  href="/account/profile"
+                  className="flex items-center text-sage-700 hover:text-sage-800 font-medium"
+                >
+                  <User className="mr-2 h-4 w-4" />
+                  My Account
+                </Link>
+              )}
             </div>
           </nav>
         )}

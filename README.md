@@ -20,6 +20,7 @@ This will read the package.json file and install dependencies using Bun, generat
 
 2️⃣ Start the Development Server
 
+```
 bun run dev
 
 Then, open your browser and visit:
@@ -27,6 +28,10 @@ Then, open your browser and visit:
 👉 http://localhost:3000
 
 You should see your Next.js app running.
+
+## 🔄 Recent Changes
+
+- **Removed Address Management**: The address management functionality has been completely removed from the application. Users now enter shipping/billing information directly during checkout.
 
 🛠 Project Structure
 You can begin editing the app by modifying:

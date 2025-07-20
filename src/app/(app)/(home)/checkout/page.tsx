@@ -118,7 +118,7 @@ export default function CheckoutPage() {
             className="w-full mt-4 py-6 bg-black hover:bg-gray-800 text-white font-medium"
           >
             <CreditCard className="mr-2 h-5 w-5" />
-            Pay Now - {formatPrice(cartTotal)}
+            Pay Now - {formatPrice(cartTotal < 300 ? cartTotal + 50 : cartTotal)}
           </Button>
         </div>
       </div>

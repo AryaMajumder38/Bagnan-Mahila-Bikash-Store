@@ -36,7 +36,7 @@ export const ProductView = ({ productId }: ProductViewProps) => {
   );
   const [imageError, setImageError] = useState<boolean>(false);
   const [hoverImageError, setHoverImageError] = useState<boolean>(false);
-  const [quantity, setQuantity] = useState<number>(1);
+  // Quantity is now fixed at 1
   const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [isInCart, setIsInCart] = useState<boolean>(false);
@@ -96,9 +96,7 @@ export const ProductView = ({ productId }: ProductViewProps) => {
   const mainImageLoader = useImageLoader(imageUrl);
   const hoverImageLoader = useImageLoader(hoverImageUrl);
   
-  // Quantity handlers
-  const incrementQuantity = () => setQuantity(prev => Math.min(prev + 1, 10));
-  const decrementQuantity = () => setQuantity(prev => Math.max(prev - 1, 1));
+  // Fixed quantity is used now
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -325,37 +323,7 @@ export const ProductView = ({ productId }: ProductViewProps) => {
             </div>
           )}
           
-          {/* Quantity selector */}
-          <div>
-            <label htmlFor="quantity" className="block font-medium mb-2">
-              Quantity
-            </label>
-            <div className="flex w-32 h-10 bg-gray-50 rounded-md overflow-hidden">
-              <button 
-                onClick={decrementQuantity}
-                className="flex-none w-10 flex items-center justify-center hover:bg-gray-100 transition-colors"
-                disabled={quantity <= 1}
-              >
-                <Minus className="h-4 w-4" />
-              </button>
-              <input
-                id="quantity"
-                type="number"
-                min="1"
-                max="10"
-                value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
-                className="flex-grow text-center bg-transparent focus:outline-none w-full"
-              />
-              <button 
-                onClick={incrementQuantity}
-                className="flex-none w-10 flex items-center justify-center hover:bg-gray-100 transition-colors"
-                disabled={quantity >= 10}
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
+          {/* Quantity is fixed to 1 */}
           
           {/* Action buttons */}
           <div className="flex flex-col sm:flex-row gap-3">
@@ -387,7 +355,8 @@ export const ProductView = ({ productId }: ProductViewProps) => {
                   
                   // If logged in, add product to cart
                   if (session?.user) {
-                    addItem(productToAdd, quantity);
+                    // Always add quantity of 1
+                    addItem(productToAdd, 1);
                     
                     // Show a toast notification with variant info if applicable
                     if (selectedVariant) {
@@ -435,7 +404,7 @@ export const ProductView = ({ productId }: ProductViewProps) => {
                   // Create URLSearchParams with product info
                   const params = new URLSearchParams();
                   params.set('productId', data.id);
-                  params.set('quantity', quantity.toString());
+                  params.set('quantity', '1'); // Fixed quantity of 1
                   
                   // Add variant info if selected
                   if (selectedVariant) {

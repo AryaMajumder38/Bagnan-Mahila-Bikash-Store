@@ -157,6 +157,25 @@ export interface TenantAuthOperations {
 export interface User {
   id: string;
   username: string;
+  /**
+   * User saved addresses
+   */
+  addresses?:
+    | {
+        fullName: string;
+        addressLine1: string;
+        addressLine2?: string | null;
+        city: string;
+        state: string;
+        pinCode: string;
+        phone: string;
+        /**
+         * Make this the default address
+         */
+        isDefault?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
   roles?: ('user' | 'super-admin')[] | null;
   tenants?:
     | {
@@ -550,6 +569,19 @@ export interface PayloadMigration {
  */
 export interface UsersSelect<T extends boolean = true> {
   username?: T;
+  addresses?:
+    | T
+    | {
+        fullName?: T;
+        addressLine1?: T;
+        addressLine2?: T;
+        city?: T;
+        state?: T;
+        pinCode?: T;
+        phone?: T;
+        isDefault?: T;
+        id?: T;
+      };
   roles?: T;
   tenants?:
     | T

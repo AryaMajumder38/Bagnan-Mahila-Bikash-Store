@@ -185,7 +185,7 @@ export default function DirectCheckoutPage() {
             disabled={isProductLoading || checkoutItems.length === 0}
           >
             <CreditCard className="mr-2 h-5 w-5" />
-            Pay Now - {formatPrice(checkoutTotal)}
+            Pay Now - {formatPrice(checkoutTotal < 300 ? checkoutTotal + 50 : checkoutTotal)}
           </Button>
         </div>
       </div>

@@ -32,6 +32,57 @@ export const Users: CollectionConfig = {
     type: 'text',
    },
    {
+    name: "addresses",
+    type: "array",
+    admin: {
+      description: "User saved addresses"
+    },
+    fields: [
+      {
+        name: "fullName",
+        type: "text",
+        required: true,
+      },
+      {
+        name: "addressLine1",
+        type: "text",
+        required: true,
+      },
+      {
+        name: "addressLine2",
+        type: "text",
+      },
+      {
+        name: "city",
+        type: "text",
+        required: true,
+      },
+      {
+        name: "state",
+        type: "text",
+        required: true,
+      },
+      {
+        name: "pinCode",
+        type: "text",
+        required: true,
+      },
+      {
+        name: "phone",
+        type: "text",
+        required: true,
+      },
+      {
+        name: "isDefault",
+        type: "checkbox",
+        defaultValue: false,
+        admin: {
+          description: "Make this the default address"
+        }
+      }
+    ]
+   },
+   {
     admin: {
       position: 'sidebar',
     },

@@ -203,7 +203,8 @@ export const ordersRouter = createTRPCRouter({
         const user = authResult.user;
 
         try {
-          const orders = await ctx.db.find({
+          // First try to find orders where user is stored as a relationship object
+          let orders = await ctx.db.find({
             collection: 'orders',
             where: {
               'user.value': {
@@ -211,10 +212,42 @@ export const ordersRouter = createTRPCRouter({
               },
             },
             sort: '-createdAt',
-            depth: 1, // Adjust the depth as needed
-          } as any); // Type cast to avoid collection type issues
-
-          return orders.docs;
+            depth: 1,
+          } as any);
+          
+          // If no orders found, try the direct user ID approach
+          if (orders.docs.length === 0) {
+            orders = await ctx.db.find({
+              collection: 'orders',
+              where: {
+                user: {
+                  equals: user.id,
+                },
+              },
+              sort: '-createdAt',
+              depth: 1,
+            } as any);
+          }
+          
+          console.log(`Found ${orders.docs.length} orders for user ${user.id}`);
+          
+          // Ensure orders are properly formatted with necessary fields
+          const formattedOrders = orders.docs.map(order => {
+            // Handle order as a plain JavaScript object to avoid TypeScript errors
+            const orderObj = order as any;
+            
+            // Log order structure for debugging
+            console.log('Order structure:', JSON.stringify({
+              id: orderObj.id,
+              itemsCount: orderObj.items?.length || 0,
+              userField: orderObj.user
+            }));
+            
+            return orderObj;
+          });
+          
+          console.log('Order IDs:', formattedOrders.map(order => order.id));
+          return formattedOrders;
         } catch (findError) {
           console.error("Failed to fetch orders:", findError);
           throw new TRPCError({

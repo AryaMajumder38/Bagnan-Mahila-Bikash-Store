@@ -150,8 +150,9 @@ export function CheckoutForm({ items, total }: CheckoutFormProps) {
         const price = item.product.selectedVariant?.price || item.product.price || 0;
         return sum + (price * item.quantity);
       }, 0);
-      const tax = subtotal * 0.05; // 5% tax
-      const shippingCost = subtotal > 1000 ? 0 : 100; // Free shipping for orders over ₹1000
+      // No tax applied per new business rules
+      const tax = 0; 
+      const shippingCost = subtotal >= 300 ? 0 : 50; // Free shipping for orders over ₹300
       
       // Format items for API
       const orderItems = items.map(item => ({

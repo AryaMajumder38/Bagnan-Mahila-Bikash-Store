@@ -11,11 +11,11 @@ interface OrderSummaryProps {
 }
 
 export function OrderSummary({ items, total }: OrderSummaryProps) {
-  // Calculate subtotal and shipping cost
+  // Calculate subtotal and shipping cost based on business rules
   const subtotal = total;
-  const shipping = 0; // Free shipping for now, could be calculated based on order
-  const tax = Math.round(subtotal * 0.18); // 18% tax rate example (GST in India)
-  const orderTotal = subtotal + shipping + tax;
+  const shipping = subtotal >= 300 ? 0 : 50; // Free shipping for orders over ₹300
+  const tax = 0; // No tax per new business rules
+  const orderTotal = subtotal + shipping;
   
   return (
     <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
@@ -52,6 +52,12 @@ export function OrderSummary({ items, total }: OrderSummaryProps) {
       
       <Separator className="my-4" />
       
+      {/* Shipping policy note */}
+      <div className="mb-4 p-3 bg-blue-50 rounded-md border border-blue-100 text-blue-800 text-sm">
+        <p className="font-medium">Shipping Policy</p>
+        <p>Orders over ₹300 qualify for free shipping. Orders under ₹300 have a shipping charge of ₹50.</p>
+      </div>
+      
       {/* Cost breakdown */}
       <div className="space-y-2">
         <div className="flex justify-between">
@@ -62,10 +68,7 @@ export function OrderSummary({ items, total }: OrderSummaryProps) {
           <span className="text-gray-600">Shipping</span>
           <span>{shipping === 0 ? "Free" : formatPrice(shipping)}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-gray-600">Tax (18% GST)</span>
-          <span>{formatPrice(tax)}</span>
-        </div>
+        {/* No tax is applied */}
         
         <Separator className="my-2" />
         
