@@ -93,9 +93,12 @@ const Navbar = () => {
                     <span>My Account</span>
                   </DropdownMenuItem>
                    {/* Optional: Add a link to the admin dashboard if it exists */}
-                  <DropdownMenuItem onClick={() => router.push('/admin')}>
-                    <span>Dashboard</span>
-                  </DropdownMenuItem>
+                  {/* Only show Dashboard link for admin users */}
+                  {(user as any)?.roles?.includes('super-admin') && (
+                    <DropdownMenuItem onClick={() => router.push('/admin')}>
+                      <span>Dashboard</span>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <LogoutButton />
                 </DropdownMenuContent>

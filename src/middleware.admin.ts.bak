@@ -1,0 +1,67 @@
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { getPayload } from 'payload';
+import config from '@payload-config';
+
+// This middleware specifically protects admin routes
+export async function middleware(request: NextRequest) {
+  // Only run this middleware for admin paths
+  if (!request.nextUrl.pathname.startsWith('/admin')) {
+    return NextResponse.next();
+  }
+
+  try {
+    console.log('Admin middleware: Checking admin access for path', request.nextUrl.pathname);
+    
+    // Initialize Payload
+    const payload = await getPayload({ config });
+    
+    // Get auth information using the request headers
+    const { user } = await payload.auth({
+      req: {
+        headers: request.headers as any,
+        cookies: Object.fromEntries(request.cookies.getAll().map(c => [c.name, c.value]))
+      } as any
+    });
+    
+    // No user found - redirect to login
+    if (!user) {
+      console.log('Admin middleware: No authenticated user found');
+      return redirectToLogin(request);
+    }
+    
+    // Check if user has the super-admin role
+    const roles = (user as any).roles || [];
+    const isAdmin = Array.isArray(roles) && roles.includes('super-admin');
+    
+    if (!isAdmin) {
+      console.log(`Admin middleware: User ${user.id} does not have super-admin role`);
+      console.log(`Admin middleware: User roles:`, roles);
+      return redirectToUnauthorized(request);
+    }
+    
+    console.log(`Admin middleware: Authorized admin access for ${user.id}`);
+    return NextResponse.next();
+    
+  } catch (error) {
+    console.error('Admin middleware error:', error);
+    return redirectToLogin(request);
+  }
+}
+
+// Helper function to redirect to login page
+function redirectToLogin(request: NextRequest) {
+  const loginUrl = new URL('/sign-in', request.url);
+  loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
+  return NextResponse.redirect(loginUrl);
+}
+
+// Helper function to redirect unauthorized users to a specific page
+function redirectToUnauthorized(request: NextRequest) {
+  const unauthorizedUrl = new URL('/unauthorized', request.url);
+  return NextResponse.redirect(unauthorizedUrl);
+}
+
+export const config = {
+  matcher: ['/admin', '/admin/:path*']
+};
