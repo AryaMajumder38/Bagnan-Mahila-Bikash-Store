@@ -1,10 +1,26 @@
 import { CustomCategory } from "@/app/(app)/(home)/types";
-import { Category, Media } from "@/payload-types";
+import { Category, Media, Product } from "@/payload-types";
 import { baseProcedure, createTRPCRouter } from "@/trpc/init";
 import { sub } from "date-fns";
 import { id } from "date-fns/locale";
 import { Where } from "payload";
 import { z } from "zod";
+
+export interface SearchResultCategory {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface SearchResults {
+  docs: Product[];
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  totalDocs: number;
+  totalPages: number;
+  page: number;
+  matchedCategories?: SearchResultCategory[];
+}
 
 export const productsRouter = createTRPCRouter({ 
   getOne: baseProcedure
@@ -77,5 +93,94 @@ export const productsRouter = createTRPCRouter({
 
 
       return data;
+    }),
+    searchProducts: baseProcedure
+    .input(z.object({
+      query: z.string(),
+      page: z.number().default(1),
+      limit: z.number().default(12),
+    }))
+    .query(async ({ ctx, input }) => {
+      const searchQuery = input.query.trim();
+      
+      if (!searchQuery) {
+        return { 
+          docs: [],
+          hasNextPage: false,
+          hasPrevPage: false,
+          totalDocs: 0,
+          totalPages: 0,
+          page: 1
+        };
+      }
+      
+      // First check if the search query matches any category names
+      const categoryMatches = await ctx.db.find({
+        collection: 'categories',
+        where: {
+          or: [
+            { name: { like: searchQuery } },
+            { slug: { like: searchQuery } }
+          ]
+        },
+        depth: 1,
+        limit: 5, // Limit to avoid too many results
+      });
+      
+      // Build a list of category slugs that match the search query
+      const matchingCategorySlugs: string[] = [];
+      const matchingSubcategorySlugs: string[] = [];
+      
+      // Process found categories
+      if (categoryMatches.docs.length > 0) {
+        categoryMatches.docs.forEach((category: any) => {
+          if (category.slug) {
+            matchingCategorySlugs.push(category.slug);
+          }
+          
+          // Check for subcategories
+          if (category.subcategories?.docs && Array.isArray(category.subcategories.docs)) {
+            category.subcategories.docs.forEach((subcategory: any) => {
+              if (subcategory.slug) {
+                matchingSubcategorySlugs.push(subcategory.slug);
+              }
+            });
+          }
+        });
+      }
+      
+      const searchResults = await ctx.db.find({
+        collection: 'products',
+        depth: 2,
+        page: input.page,
+        limit: input.limit,
+        pagination: true,
+        where: {
+          or: [
+            // Standard search by name and description
+            { name: { like: searchQuery } },
+            { description: { like: searchQuery } },
+            
+            // If we found matching categories, include products in those categories
+            ...(matchingCategorySlugs.length > 0 ? [
+              { 'category.slug': { in: matchingCategorySlugs } }
+            ] : []),
+            
+            // If we found matching subcategories, include products in those subcategories
+            ...(matchingSubcategorySlugs.length > 0 ? [
+              { 'category.slug': { in: matchingSubcategorySlugs } }
+            ] : [])
+          ],
+        },
+      });
+
+      // Include information about any category matches to display in UI
+      const enhancedResults = {
+        ...searchResults,
+        // Add metadata about category matches
+        matchedCategories: matchingCategorySlugs.length > 0 ? categoryMatches.docs : []
+      };
+
+      return enhancedResults;
     }),
 });
