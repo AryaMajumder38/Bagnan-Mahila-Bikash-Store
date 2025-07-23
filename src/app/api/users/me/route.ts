@@ -4,13 +4,13 @@ import config from '@/payload.config';
 
 export async function GET(req: Request) {
   try {
-    console.log("API /users/me: Processing request");
+    ("API /users/me: Processing request");
     // Initialize Payload
     const payload = await getPayload({ config });
     
     // Get the cookie header from the request for authentication
     const cookieHeader = req.headers.get('cookie') || '';
-    console.log("API /users/me: Cookie header exists:", !!cookieHeader);
+    ("API /users/me: Cookie header exists:", !!cookieHeader);
     
     // Get the current user from the request
     const { user } = await payload.auth({
@@ -29,8 +29,8 @@ export async function GET(req: Request) {
       );
     }
     
-    console.log("API /users/me: User authenticated:", user.id);
-    console.log("API /users/me: User roles:", (user as any).roles || []);
+    ("API /users/me: User authenticated:", user.id);
+    ("API /users/me: User roles:", (user as any).roles || []);
     
     // Return the user data with cache control headers
     return NextResponse.json(

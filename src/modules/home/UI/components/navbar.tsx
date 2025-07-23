@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LogoutButton } from "@/components/ui/logout-button";
 import { Input } from "@/components/ui/input";
+import { useScreenSize } from "@/hooks/use-screen-size";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,7 +35,7 @@ const Navbar = () => {
   const router = useRouter();
   const trpc = useTRPC();
   const session = useQuery(trpc.auth.session.queryOptions());
-  const { cartCount, openCart } = useCart();
+  const { cartCount, openCart, isOpen: isCartOpen, closeCart } = useCart();
 
   const navigateToAccount = () => {
     router.push('/account/profile');
@@ -82,8 +83,43 @@ const Navbar = () => {
   const user = session.data?.user;
   const userInitials = user?.email ? user.email.substring(0, 2).toUpperCase() : "U";
 
+  // Set CSS variables for responsive sizing
+  const navbarHeight = "h-14 sm:h-16 md:h-20";
+  const screenSize = useScreenSize();
+  
+  // We need to add the border height (0.5px) to ensure perfect alignment
+  // Set height based on screen size
+  const getNavbarHeightValue = () => {
+    if (screenSize === 'xs') return "3.625rem"; // 14px = 3.5rem + 0.125rem border (mobile)
+    if (screenSize === 'sm') return "4.125rem"; // 16px = 4rem + 0.125rem border (small screens)
+    return "5.125rem";                         // 20px = 5rem + 0.125rem border (medium+ screens)
+  };
+
+  // Get total height including border for better alignment
+  useEffect(() => {
+    const setNavbarHeightProperty = () => {
+      const navbar = document.querySelector('header');
+      if (navbar) {
+        const actualHeight = navbar.getBoundingClientRect().height;
+        document.documentElement.style.setProperty('--actual-navbar-height', `${actualHeight}px`);
+      }
+    };
+    
+    // Set initial height
+    setNavbarHeightProperty();
+    
+    // Update on resize
+    window.addEventListener('resize', setNavbarHeightProperty);
+    return () => window.removeEventListener('resize', setNavbarHeightProperty);
+  }, [screenSize]);
+
   return (
-    <header className="bg-[#fafafaf6] sticky top-0 z-50">
+    <header 
+      className={`bg-[#fafafaf6] sticky top-0 z-50 ${navbarHeight}`}
+      style={{
+        "--navbar-height": getNavbarHeightValue(),
+      } as React.CSSProperties}
+    >
       {/* Thin top border line as seen in the design */}
       <div className="h-0.5 bg-gray-200"></div>
       
@@ -114,7 +150,7 @@ const Navbar = () => {
                 opacity: { duration: 0.2 } 
               }}
             >
-              <div className="container mx-auto h-20 flex items-center px-4 sm:px-6 lg:px-8">
+              <div className="container mx-auto h-16 sm:h-18 md:h-20 flex items-center px-2 sm:px-4 md:px-6 lg:px-8">
                 <form onSubmit={handleSearch} className="flex-1 flex items-center">
                   <motion.div 
                     className="relative flex-1 flex items-center"
@@ -122,7 +158,7 @@ const Navbar = () => {
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.1, duration: 0.3 }}
                   >
-                    <Search className="h-5 w-5 text-gray-400 absolute left-3" />
+                    <Search className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 absolute left-3" />
                     <div className="relative w-full">
                       <Input
                         ref={searchInputRef}
@@ -130,7 +166,7 @@ const Navbar = () => {
                         placeholder="Search products or categories..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full h-12 pl-10 pr-4 border-gray-200 bg-gray-50 focus:bg-[#fafafaf6] focus:border-black focus:ring-0 rounded-md shadow-sm text-base transition-all duration-200"
+                        className="w-full h-10 sm:h-12 pl-10 pr-4 border-gray-200 bg-gray-50 focus:bg-[#fafafaf6] focus:border-black focus:ring-0 rounded-md shadow-sm text-sm sm:text-base transition-all duration-200"
                         autoFocus
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
@@ -151,7 +187,7 @@ const Navbar = () => {
                       type="button" 
                       variant="ghost" 
                       size="icon"
-                      className="h-10 w-10 rounded-full hover:bg-gray-100"
+                      className="h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:bg-gray-100"
                       onClick={() => setIsSearchOpen(false)}
                       aria-label="Close search"
                     >
@@ -198,23 +234,50 @@ const Navbar = () => {
         }} 
       />
       
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative flex items-center justify-between h-20">
+      <div className="container mx-auto px-2 sm:px-3 md:px-6 lg:px-8 h-full">
+        <div className="relative flex items-center justify-between h-full">
           
-          {/* Left Section: Hamburger Menu for Sidebar */}
+          {/* Left Section: Hamburger Menu for Sidebar (toggles to X when sidebar is open) */}
           <Button
             variant="ghost"
-            onClick={() => setIsSidebarOpen(true)}
-            aria-label="Open menu"
-            className="hover:bg-transparent"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            aria-label={isSidebarOpen ? "Close menu" : "Open menu"}
+            className="hover:bg-transparent p-1 sm:p-2 relative"
+            size="sm"
           >
-            <Menu className="h-6 w-6 text-black" />
+            <div className="relative">
+              <AnimatePresence initial={false} mode="wait">
+                {isSidebarOpen ? (
+                  <motion.div
+                    key="close"
+                    initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
+                    animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                    exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex items-center justify-center"
+                  >
+                    <X className="h-5 w-5 sm:h-6 sm:w-6 text-black" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="menu"
+                    initial={{ opacity: 0, rotate: 90, scale: 0.5 }}
+                    animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                    exit={{ opacity: 0, rotate: -90, scale: 0.5 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex items-center justify-center"
+                  >
+                    <Menu className="h-5 w-5 sm:h-6 sm:w-6 text-black" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </Button>
 
           {/* Center Section: Logo */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-[100px] sm:max-w-[120px] md:max-w-[140px]">
             <Link href="/" className="flex flex-col items-center" aria-label="Back to homepage">
-              <div className="h-15 w-auto">
+              <div className="h-8 sm:h-10 md:h-12 w-auto">
               <img 
                 src="/media/logo.png" 
                 alt="Apna Bazar Logo"
@@ -225,7 +288,7 @@ const Navbar = () => {
             </div>
 
           {/* Right Section: Search, User and Cart Icons */}
-          <div className="flex items-center justify-end space-x-2 sm:space-x-4">
+          <div className="flex items-center justify-end space-x-1 sm:space-x-2 md:space-x-4">
             {/* Search Button */}
             <div className="relative">
               <motion.div
@@ -234,11 +297,12 @@ const Navbar = () => {
               >
                 <Button 
                   variant="ghost" 
-                  className="hover:bg-gray-100 transition-colors" 
+                  className="hover:bg-gray-100 transition-colors p-1 sm:p-2" 
+                  size="sm"
                   onClick={() => setIsSearchOpen(true)}
                   aria-label="Search products"
                 >
-                  <Search className="h-6 w-6 text-black" />
+                  <Search className="h-5 w-5 sm:h-6 sm:w-6 text-black" />
                 </Button>
               </motion.div>
             </div>
@@ -247,8 +311,12 @@ const Navbar = () => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" aria-label="User account" className="hover:bg-transparent">
-                     <User className="h-6 w-6 text-black" />
+                  <Button 
+                    variant="ghost" 
+                    aria-label="User account" 
+                    size="sm"
+                    className="hover:bg-transparent p-1 sm:p-2">
+                     <User className="h-5 w-5 sm:h-6 sm:w-6 text-black" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
@@ -270,28 +338,60 @@ const Navbar = () => {
             ) : (
               // If logged out, show a user icon that links to the sign-in page
               <Link href="/sign-in" aria-label="Sign in">
-                <Button variant="ghost" className="hover:bg-transparent">
-                  <User className="h-6 w-6 text-black" />
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="hover:bg-transparent p-1 sm:p-2">
+                  <User className="h-5 w-5 sm:h-6 sm:w-6 text-black" />
                 </Button>
               </Link>
             )}
             
-            {/* Cart Icon - Swapped to ShoppingBag */}
+            {/* Cart Icon - Toggles to X when cart is open */}
             <Button
               variant="ghost"
-              className="relative hover:bg-transparent"
-              onClick={openCart}
-              aria-label={`Shopping cart with ${cartCount} items`}
+              size="sm"
+              className="relative hover:bg-transparent p-1 sm:p-2"
+              onClick={isCartOpen ? closeCart : openCart}
+              aria-label={isCartOpen ? "Close cart" : `Shopping cart with ${cartCount} items`}
             >
-              <ShoppingBag className="h-6 w-6 text-black" />
-              {cartCount > 0 && (
-                <Badge 
-                  variant="destructive" 
-                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                >
-                  {cartCount}
-                </Badge>
-              )}
+              <div className="relative">
+                <AnimatePresence initial={false} mode="wait">
+                  {isCartOpen ? (
+                    <motion.div
+                      key="close-cart"
+                      initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
+                      animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                      exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-center justify-center"
+                    >
+                      <X className="h-5 w-5 sm:h-6 sm:w-6 text-black" />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="shopping-bag"
+                      initial={{ opacity: 0, rotate: 90, scale: 0.5 }}
+                      animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                      exit={{ opacity: 0, rotate: -90, scale: 0.5 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-center justify-center"
+                    >
+                      <div className="relative">
+                        <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 text-black" />
+                        {cartCount > 0 && (
+                          <Badge 
+                            variant="destructive" 
+                            className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center p-0 text-[10px] sm:text-xs"
+                          >
+                            {cartCount}
+                          </Badge>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </Button>
           </div>
         </div>

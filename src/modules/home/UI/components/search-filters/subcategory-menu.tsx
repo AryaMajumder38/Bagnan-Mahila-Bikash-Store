@@ -33,7 +33,7 @@ export const SubcategoryMenu = ({
             <div 
             style={{backgroundColor}}
             className="w-60 text-black rounded-md overflow-hidden border shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -transalate-x-[2px] -translate-y-[2px] ">
-                <div>
+                {/* <div>
                     {category.subcategories?.map((subcategory: Category) => (
                         <Link
                             key={subcategory.id}
@@ -44,7 +44,7 @@ export const SubcategoryMenu = ({
                             </Link>
 
                     ))}
-                </div>
+                </div> */}
             </div>
         </div>
     );

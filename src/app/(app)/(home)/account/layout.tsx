@@ -46,35 +46,35 @@ export default function AccountLayout({
   }
   
   return (
-    <div className="container mx-auto py-10 px-4">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="container mx-auto py-4 sm:py-8 md:py-10 px-2 sm:px-4">
+      <div className="max-w-4xl mx-auto space-y-3 sm:space-y-6">
         <div>
-          <h1 className="text-3xl font-bold mb-2">My Account</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">My Account</h1>
+          <p className="text-xs sm:text-sm md:text-base text-muted-foreground truncate">
             Welcome back, {(session.user as any).username || session.user.email}
           </p>
         </div>
-        
+
         {/* Account navigation */}
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid grid-cols-2 md:w-auto w-full">
+          <TabsList className="grid grid-cols-2 gap-2 w-full sm:w-auto">
             <TabsTrigger value="profile" asChild>
-              <Link href="/account/profile">
-                <UserCircle className="h-4 w-4 mr-2" />
+              <Link href="/account/profile" className="flex items-center justify-center px-2 py-1 sm:px-3 sm:py-2 text-xs sm:text-sm">
+                <UserCircle className="h-4 w-4 mr-1 sm:mr-2" />
                 <span>Profile</span>
               </Link>
             </TabsTrigger>
             <TabsTrigger value="orders" asChild>
-              <Link href="/account/orders">
-                <Package className="h-4 w-4 mr-2" />
+              <Link href="/account/orders" className="flex items-center justify-center px-2 py-1 sm:px-3 sm:py-2 text-xs sm:text-sm">
+                <Package className="h-4 w-4 mr-1 sm:mr-2" />
                 <span>Orders</span>
               </Link>
             </TabsTrigger>
           </TabsList>
         </Tabs>
-        
+
         {/* Page content */}
-        <div className="bg-white rounded-lg border p-6 shadow-sm">
+        <div className="bg-white rounded-lg border p-3 sm:p-6 shadow-sm overflow-x-auto">
           {children}
         </div>
       </div>

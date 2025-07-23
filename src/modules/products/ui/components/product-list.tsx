@@ -114,19 +114,19 @@ export const ProductList = ({ category }: Props) => {
 
   // ## MODIFIED LAYOUT STARTS HERE ##
   return (
-    <div className="container mx-auto pt-12 pb-12 px-24 sm:px-36 lg:px-48">
+    <div className="container mx-auto pt-4 pb-8 px-1.5 xs:px-2 sm:pt-8 sm:pb-12 sm:px-4 md:px-8 lg:px-16 xl:px-24">
       {/* Page Title */}
-      <h1 className="text-5xl font-serif lowercase mb-8">
-        {category || 'heirloom rice'}
+      <h1 className="text-xl xs:text-2xl sm:text-4xl md:text-5xl font-serif lowercase mb-3 xs:mb-4 sm:mb-8 text-center sm:text-left break-words">
+        {category || 'Products'}
       </h1>
 
       {/* Simple Sort Bar */}
-      <div className="flex justify-between items-center mb-10 border-b border-t py-4">
-        <div className="flex items-center gap-x-6 text-sm">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 xs:mb-6 sm:mb-10 border-b border-t py-2 xs:py-3 sm:py-4 gap-2 xs:gap-3 sm:gap-0">
+        <div className="flex items-center gap-x-2 xs:gap-x-3 sm:gap-x-6 text-xs sm:text-sm flex-wrap">
            {/* Sort Dropdown */}
-           <span className="text-gray-600">Sort by:</span>
+           <span className="text-gray-600 whitespace-nowrap">Sort by:</span>
            <Select value={sortOption} onValueChange={setSortOption}>
-            <SelectTrigger className="w-auto border focus:ring-0 text-gray-600 h-8">
+            <SelectTrigger className="w-24 xs:w-28 sm:w-auto border focus:ring-0 text-gray-600 h-8 text-xs sm:text-sm">
               <SelectValue placeholder="Select" />
             </SelectTrigger>
             <SelectContent>
@@ -140,13 +140,13 @@ export const ProductList = ({ category }: Props) => {
         </div>
 
         {/* Product Count */}
-        <div className="text-sm text-gray-700">
+        <div className="text-xs sm:text-sm text-gray-700 text-right min-w-[80px] xs:min-w-[100px]">
           {data.totalDocs || sortedProducts.length} products
         </div>
       </div>
       
       {/* Product Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10 mb-12">
+      <div className="grid grid-cols-2 gap-x-2 xs:gap-x-3 gap-y-4 xs:gap-y-6 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 md:grid-cols-3 lg:grid-cols-4 mb-8 sm:mb-12">
         {sortedProducts.length > 0 ? (
           sortedProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
@@ -160,13 +160,13 @@ export const ProductList = ({ category }: Props) => {
       
       {/* Load more button */}
       {hasMore && (
-        <div className="w-full flex justify-center mt-8 mb-4">
+        <div className="w-full flex justify-center mt-4 xs:mt-6 sm:mt-8 mb-2 sm:mb-4">
           <Button 
             variant="outline" 
-            size="lg" 
+            size="sm" 
             disabled={isLoadingMore}
             onClick={() => loadMoreProducts()}
-            className="mx-auto"
+            className="mx-auto text-xs sm:text-sm h-9 sm:h-11 px-4 xs:px-6 sm:px-10"
           >
             {isLoadingMore ? (
               <>

@@ -10,17 +10,17 @@ const dirs = [
   '.next/static/media'
 ];
 
-console.log('=== CHECKING FOR MEDIA FILES ===');
+
 
 // Check each directory
 for (const dir of dirs) {
   try {
     const dirPath = path.resolve(process.cwd(), dir);
-    console.log(`Checking directory: ${dirPath}`);
+
     
     if (fs.existsSync(dirPath)) {
       const files = fs.readdirSync(dirPath);
-      console.log(`✅ Directory exists with ${files.length} files`);
+
       
       // List up to 5 files as samples
       const sampleFiles = files.slice(0, 5);
