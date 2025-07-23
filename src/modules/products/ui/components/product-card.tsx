@@ -141,38 +141,18 @@ const ProductCard = ({ product }: ProductCardProps) => {
         )}
       </div>
       
-      <CardHeader className="p-3 pb-1">
-        <div className="flex justify-between items-start gap-1">
-          <CardTitle className="text-sm line-clamp-1 group-hover:text-primary transition-colors">{product.name}</CardTitle>
-          <Badge className="text-xs py-0 h-5">{categoryName}</Badge>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="p-3 pt-0 pb-0 flex-grow">
-        {product.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2 mb-1">
-            {product.description}
-          </p>
-        )}
-      </CardContent>
-      
-      <CardFooter className="p-3 pt-1 flex items-center justify-between">
-        <div>
+      <div className="p-4 flex flex-col items-center justify-center text-center">
+        <h3 className="font-medium text-sm mb-2 line-clamp-1 group-hover:text-primary transition-colors">
+          {product.name}
+        </h3>
+        <p className="font-semibold text-sm">
           {hasVariants ? (
-            <p className="font-semibold text-sm">
-              ₹{minPrice?.toFixed(2)} {variants.length > 0 && <span className="text-xs text-muted-foreground">+</span>}
-            </p>
+            <>₹{minPrice?.toFixed(2)}</>
           ) : (
-            <p className="font-semibold text-sm">₹{product.price?.toFixed(2) || '0.00'}</p>
+            <>₹{product.price?.toFixed(2) || '0.00'}</>
           )}
-          {hasVariants && variants.length > 0 && (
-            <p className="text-xs text-muted-foreground">{variants.length} variant{variants.length > 1 ? 's' : ''}</p>
-          )}
-        </div>
-        <Badge variant={product.refundPolicy === 'No refund' ? 'destructive' : 'outline'} className="text-xs py-0 h-5">
-          {product.refundPolicy || 'Standard'}
-        </Badge>
-      </CardFooter>
+        </p>
+      </div>
     </Card>
     </Link>
   );

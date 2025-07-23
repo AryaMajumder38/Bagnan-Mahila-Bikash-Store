@@ -83,7 +83,7 @@ const Navbar = () => {
   const userInitials = user?.email ? user.email.substring(0, 2).toUpperCase() : "U";
 
   return (
-    <header className="bg-white sticky top-0 z-50">
+    <header className="bg-[#fafafaf6] sticky top-0 z-50">
       {/* Thin top border line as seen in the design */}
       <div className="h-0.5 bg-gray-200"></div>
       
@@ -102,7 +102,7 @@ const Navbar = () => {
             
             {/* Search overlay that slides from top */}
             <motion.div 
-              className="absolute top-0 left-0 right-0 bg-white shadow-lg z-40 w-full border-b border-gray-200"
+              className="absolute top-0 left-0 right-0 bg-[#fafafaf6] shadow-lg z-40 w-full border-b border-gray-200"
               initial={{ opacity: 0, y: -100 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -100 }}
@@ -130,7 +130,7 @@ const Navbar = () => {
                         placeholder="Search products or categories..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full h-12 pl-10 pr-4 border-gray-200 bg-gray-50 focus:bg-white focus:border-black focus:ring-0 rounded-md shadow-sm text-base transition-all duration-200"
+                        className="w-full h-12 pl-10 pr-4 border-gray-200 bg-gray-50 focus:bg-[#fafafaf6] focus:border-black focus:ring-0 rounded-md shadow-sm text-base transition-all duration-200"
                         autoFocus
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
@@ -212,15 +212,17 @@ const Navbar = () => {
           </Button>
 
           {/* Center Section: Logo */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
             <Link href="/" className="flex flex-col items-center" aria-label="Back to homepage">
-              {/* Placeholder for the oval logo from the image */}
-              <div className="h-10 w-5 bg-black rounded-full"></div>
-              <span className="text-xs font-medium tracking-widest text-gray-700 mt-1">
-                Apna Bazar
-              </span>
+              <div className="h-15 w-auto">
+              <img 
+                src="/media/logo.png" 
+                alt="Apna Bazar Logo"
+                className="h-full w-auto object-contain"
+              />
+              </div>
             </Link>
-          </div>
+            </div>
 
           {/* Right Section: Search, User and Cart Icons */}
           <div className="flex items-center justify-end space-x-2 sm:space-x-4">

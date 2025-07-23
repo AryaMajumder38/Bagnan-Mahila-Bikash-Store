@@ -4,7 +4,7 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
 import { Footer } from "@/modules/home/UI/components/footer";
 import  Navbar  from "@/modules/home/UI/components/navbar";
-import { SearchFilters } from "@/modules/home/UI/components/search-filters";
+//import { SearchFilters } from "@/modules/home/UI/components/search-filters";
 
 
 import { Category } from '@/payload-types';
@@ -26,14 +26,14 @@ const Layout = async  ({ children }: Props) => {
 
 
     return (
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen bg-[#faf9f6]">
             <Navbar/>
             <HydrationBoundary state={dehydrate(queryClient)}>
-              <Suspense fallback= {<p>..LOading..</p>}>
-            <SearchFilters />
+              <Suspense fallback= {<p>..Loading..</p>}>
+            {/* <SearchFilters /> */}
             </Suspense>
             </HydrationBoundary>
-            <div className="flex-1 bg-[#F4F4F0]">
+            <div className="flex-1 bg-[#fafafaf6]">
         {children}
             </div>
         <Footer />

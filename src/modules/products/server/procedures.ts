@@ -42,7 +42,12 @@ export const productsRouter = createTRPCRouter({
     }),
   getMany: baseProcedure
     .input(z.object({
-      category: z.string().nullable().optional(),
+      category: z.string()
+               .refine(val => val !== 'favicon.ico' && val !== 'robots.txt', {
+                 message: "Invalid category name"
+               })
+               .nullable()
+               .optional(),
       page: z.number().default(1),
       limit: z.number().default(12),
     }))
@@ -76,9 +81,9 @@ export const productsRouter = createTRPCRouter({
           subcategoriesSlugs.push(
             ...(parentCategory.subcategories?.map((subcategory) => subcategory.slug) ?? [])
           );
+          // Only add the category filter if we found a valid parent category
+          where["category.slug"] = { in: [parentCategory.slug, ...subcategoriesSlugs] }; // adjust field name if needed
         }
-
-        where["category.slug"] = { in: [parentCategory.slug, ...subcategoriesSlugs] }; // adjust field name if needed
 
       }
 

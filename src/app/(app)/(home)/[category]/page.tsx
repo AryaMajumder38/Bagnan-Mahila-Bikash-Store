@@ -11,12 +11,16 @@ interface Props {
 
 
 const Page = async ({ params  }: Props) => {
-    const { category } = await  params;
-
+    const { category } = await params;
+    
+    // Skip certain paths that shouldn't be treated as categories
+    const invalidCategoryPaths = ['favicon.ico'];
+    const isValidCategory = !invalidCategoryPaths.includes(category);
+    
     const queryClient = getQueryClient();
     void queryClient.prefetchQuery(trpc.products.getMany.queryOptions(
         {
-            category, // Pass the category from params, or null if not provided
+            category: isValidCategory ? category : null, // Only use category if it's valid
             page: 1,
             limit: 12,
         }

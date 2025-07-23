@@ -7,6 +7,11 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const url = request.nextUrl;
   
+  // Prevent favicon.ico from being treated as a category
+  if (url.pathname === '/favicon.ico') {
+    return NextResponse.next();
+  }
+  
   // Basic admin route protection - check if token exists
   if (url.pathname.startsWith('/admin')) {
     // Check for auth token - looking for both payload-token and funroad-token
