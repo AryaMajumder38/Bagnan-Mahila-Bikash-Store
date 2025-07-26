@@ -152,19 +152,6 @@ export const ProductView = ({ productId }: ProductViewProps) => {
                       setActiveImage(FALLBACK_IMAGE);
                     }}
                   />
-                  <div className="absolute bottom-3 right-3 flex space-x-2">
-                    <button 
-                      onClick={() => setIsWishlisted(!isWishlisted)}
-                      className="p-2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white shadow-sm transition-colors"
-                    >
-                      <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-rose-500 text-rose-500' : 'text-gray-700'}`} />
-                    </button>
-                    <button 
-                      className="p-2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white shadow-sm transition-colors"
-                    >
-                      <Share2 className="h-5 w-5 text-gray-700" />
-                    </button>
-                  </div>
                 </>
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center bg-muted/30">
