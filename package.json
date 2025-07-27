@@ -21,7 +21,7 @@
     "@payloadcms/db-mongodb": "^3.47.0",
     "@payloadcms/next": "^3.47.0",
     "@payloadcms/payload-cloud": "^3.47.0",
-    "@payloadcms/plugin-cloud": "^3.47.0",
+    "@payloadcms/plugin-cloud": "^3.0.4",
     "@payloadcms/plugin-cloud-storage": "^3.47.0",
     "@payloadcms/plugin-multi-tenant": "^3.47.0",
     "@payloadcms/richtext-lexical": "^3.47.0",
