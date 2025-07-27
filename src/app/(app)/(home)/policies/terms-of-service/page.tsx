@@ -23,8 +23,8 @@ const TermsOfServicePage = () => {
 
         <h2 className="text-xl font-medium mt-8 mb-4">Use of Our Services</h2>
         <p>
-          You must follow any policies made available to you within the Services. Don't misuse our Services.
-          For example, don't interfere with our Services or try to access them using a method other than the interface and 
+          You must follow any policies made available to you within the Services. Do not misuse our Services.
+          For example, do not interfere with our Services or try to access them using a method other than the interface and
           the instructions that we provide.
         </p>
         

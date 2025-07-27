@@ -59,12 +59,7 @@ const ShippingPolicyPage = () => {
           Please save all packaging materials and damaged goods before filing a claim.
         </p>
 
-        <h2 className="text-xl font-medium mt-8 mb-4">Local Pickup</h2>
-        <p>
-          We offer local pickup at our store location for customers in the area. Select "Local Pickup" at checkout
-          and we'll contact you when your order is ready for pickup.
-        </p>
-
+        
         <h2 className="text-xl font-medium mt-8 mb-4">Contact Us</h2>
         <p>
           If you have any questions about our Shipping Policy, please contact us at shipping@chitra.com.

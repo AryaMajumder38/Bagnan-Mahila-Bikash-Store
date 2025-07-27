@@ -14,6 +14,25 @@ if (!fs.existsSync(mediaDir)) {
   console.log(`Created media directory at: ${mediaDir}`);
 }
 
+// Create symlink from public/media to media directory if it doesn't exist
+const publicMediaDir = path.resolve(process.cwd(), 'public/media');
+try {
+  if (!fs.existsSync(publicMediaDir)) {
+    // Create parent directory if needed
+    const publicDir = path.resolve(process.cwd(), 'public');
+    if (!fs.existsSync(publicDir)) {
+      fs.mkdirSync(publicDir, { recursive: true });
+    }
+    
+    // Create the symlink
+    fs.symlinkSync(mediaDir, publicMediaDir, 'junction');
+    console.log(`Created symlink from ${publicMediaDir} to ${mediaDir}`);
+  }
+} catch (error) {
+  console.error(`Failed to create symlink from ${publicMediaDir} to ${mediaDir}:`, error);
+  console.log('Media files may not be accessible from the frontend without manual configuration.');
+}
+
 // Log the media configuration to help with debugging
 console.log(`Media directory configuration:
   - Directory path: ${mediaDir}

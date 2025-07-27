@@ -33,8 +33,8 @@ const RefundPolicyPage = () => {
 
         <h2 className="text-xl font-medium mt-8 mb-4">Late or Missing Refunds</h2>
         <p>
-          If you haven't received a refund yet, first check your bank account again. Then contact your credit card company, it may take some time before your refund is officially posted.
-          Next, contact your bank. There is often some processing time before a refund is posted. If you've done all of this and you still have not received your refund yet,
+          If you have not received a refund yet, first check your bank account again. Then contact your credit card company, it may take some time before your refund is officially posted.
+          Next, contact your bank. There is often some processing time before a refund is posted. If you have done all of this and you still have not received your refund yet,
           please contact us at support@chitra.com.
         </p>
 

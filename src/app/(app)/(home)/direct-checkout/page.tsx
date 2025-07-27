@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "@/modules/cart/context/cart-context";
 import { useDirectCheckout } from "@/modules/checkout/context/direct-checkout-context";
@@ -8,7 +8,7 @@ import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+
 import { formatPrice } from "@/lib/utils";
 import Link from "next/link";
 import { ArrowLeft, LogIn, ShoppingBag, CreditCard } from "lucide-react";
@@ -17,9 +17,26 @@ import { OrderSummary } from "@/modules/checkout/components/order-summary";
 import { Product } from "@/payload-types";
 import { CartItem, ProductVariant } from "@/modules/cart/context/cart-context";
 
+export const dynamic = 'force-dynamic';
+
 export default function DirectCheckoutPage() {
+  return (
+    <div className="container mx-auto py-12 px-4">
+      <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold mb-4">Loading checkout...</h2>
+          <p className="text-gray-500">Please wait while we prepare your checkout experience</p>
+        </div>
+      </div>}>
+        <DirectCheckoutContent />
+      </Suspense>
+    </div>
+  );
+}
+
+function DirectCheckoutContent() {
   const { items: cartItems, cartTotal } = useCart();
-  const { item: directItem, clearDirectCheckoutItem } = useDirectCheckout();
+  const { item: directItem } = useDirectCheckout();
   const [checkoutItems, setCheckoutItems] = useState<CartItem[]>([]);
   const [checkoutTotal, setCheckoutTotal] = useState<number>(0);
   
@@ -86,7 +103,7 @@ export default function DirectCheckoutPage() {
       setCheckoutItems(cartItems);
       setCheckoutTotal(cartTotal);
     }
-  }, [productData, directItem, cartItems, cartTotal, quantity]);
+  }, [productData, directItem, cartItems, cartTotal, quantity, variantName]);
   
   // If not logged in, show a message and redirect to sign in
   useEffect(() => {
