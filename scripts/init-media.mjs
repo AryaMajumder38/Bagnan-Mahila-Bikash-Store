@@ -31,21 +31,50 @@ if (!fs.existsSync(mediaDir)) {
 
 // Create symlink from public/media to media directory
 try {
-  // Remove existing symlink if it exists
-  if (fs.existsSync(publicMediaPath)) {
-    fs.unlinkSync(publicMediaPath);
-    console.log('Removed existing public/media symlink');
-  }
+  // Check if we're in a Vercel deployment
+  const isVercel = process.env.VERCEL === '1';
   
-  // Create the symlink
-  fs.symlinkSync(
-    path.relative(path.dirname(publicMediaPath), mediaDir), 
-    publicMediaPath, 
-    'dir'
-  );
-  console.log(`✅ Created symlink from public/media to ${mediaDir}`);
+  // If we're on Vercel, just create a directory instead of a symlink
+  if (isVercel) {
+    console.log('Detected Vercel environment - creating directory instead of symlink');
+    
+    if (fs.existsSync(publicMediaPath)) {
+      const stats = fs.lstatSync(publicMediaPath);
+      if (stats.isSymbolicLink()) {
+        fs.unlinkSync(publicMediaPath);
+        console.log('Removed existing public/media symlink');
+      }
+    }
+    
+    if (!fs.existsSync(publicMediaPath)) {
+      fs.mkdirSync(publicMediaPath, { recursive: true });
+      console.log(`✅ Created media directory at: ${publicMediaPath}`);
+    }
+  } else {
+    // For local development, use symlinks
+    // Remove existing symlink if it exists
+    if (fs.existsSync(publicMediaPath)) {
+      fs.unlinkSync(publicMediaPath);
+      console.log('Removed existing public/media symlink');
+    }
+    
+    // Create the symlink
+    fs.symlinkSync(
+      path.relative(path.dirname(publicMediaPath), mediaDir), 
+      publicMediaPath, 
+      'dir'
+    );
+    console.log(`✅ Created symlink from public/media to ${mediaDir}`);
+  }
 } catch (error) {
-  console.error('❌ Error creating symlink:', error);
+  console.error('❌ Error setting up media directory:', error);
+  
+  // Fallback: Create a regular directory
+  console.log('Falling back to creating a regular directory');
+  if (!fs.existsSync(publicMediaPath)) {
+    fs.mkdirSync(publicMediaPath, { recursive: true });
+    console.log(`✅ Created media directory at: ${publicMediaPath} (fallback)`);
+  }
 }
 
 // Create a placeholder image if it doesn't exist yet

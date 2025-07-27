@@ -42,7 +42,6 @@ export default buildConfig({
   plugins: [
     // For production, use payloadCloudPlugin
     payloadCloudPlugin(),
-    //...(process.env.NODE_ENV === 'production' ? [payloadCloudPlugin()] : []),
     multiTenantPlugin<Config>({
       collections :{
         products : {}

@@ -24,9 +24,17 @@ try {
       fs.mkdirSync(publicDir, { recursive: true });
     }
     
-    // Create the symlink
-    fs.symlinkSync(mediaDir, publicMediaDir, 'junction');
-    console.log(`Created symlink from ${publicMediaDir} to ${mediaDir}`);
+    try {
+      // Create the symlink
+      fs.symlinkSync(mediaDir, publicMediaDir, 'junction');
+      console.log(`Created symlink from ${publicMediaDir} to ${mediaDir}`);
+    } catch (error) {
+      // If symlink fails (e.g., on Vercel), create directory instead
+      const symlinkError = error as Error;
+      console.warn(`Symlink creation failed: ${symlinkError.message}`);
+      console.log('Creating media directory in public folder instead');
+      fs.mkdirSync(publicMediaDir, { recursive: true });
+    }
   }
 } catch (error) {
   console.error(`Failed to create symlink from ${publicMediaDir} to ${mediaDir}:`, error);
