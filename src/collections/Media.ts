@@ -14,31 +14,11 @@ if (!fs.existsSync(mediaDir)) {
   console.log(`Created media directory at: ${mediaDir}`);
 }
 
-// Create symlink from public/media to media directory if it doesn't exist
+// Ensure public/media directory exists for serving files
 const publicMediaDir = path.resolve(process.cwd(), 'public/media');
-try {
-  if (!fs.existsSync(publicMediaDir)) {
-    // Create parent directory if needed
-    const publicDir = path.resolve(process.cwd(), 'public');
-    if (!fs.existsSync(publicDir)) {
-      fs.mkdirSync(publicDir, { recursive: true });
-    }
-    
-    try {
-      // Create the symlink
-      fs.symlinkSync(mediaDir, publicMediaDir, 'junction');
-      console.log(`Created symlink from ${publicMediaDir} to ${mediaDir}`);
-    } catch (error) {
-      // If symlink fails (e.g., on Vercel), create directory instead
-      const symlinkError = error as Error;
-      console.warn(`Symlink creation failed: ${symlinkError.message}`);
-      console.log('Creating media directory in public folder instead');
-      fs.mkdirSync(publicMediaDir, { recursive: true });
-    }
-  }
-} catch (error) {
-  console.error(`Failed to create symlink from ${publicMediaDir} to ${mediaDir}:`, error);
-  console.log('Media files may not be accessible from the frontend without manual configuration.');
+if (!fs.existsSync(publicMediaDir)) {
+  fs.mkdirSync(publicMediaDir, { recursive: true });
+  console.log(`Created public media directory at: ${publicMediaDir}`);
 }
 
 // Log the media configuration to help with debugging
@@ -77,12 +57,28 @@ export const Media: CollectionConfig = {
         return data;
       }
     ],
+    afterChange: [
+      ({ doc }) => {
+        // Copy the uploaded file to public/media for direct access
+        if (doc.filename) {
+          const sourcePath = path.join(mediaDir, doc.filename);
+          const targetPath = path.join(publicMediaDir, doc.filename);
+          
+          try {
+            fs.copyFileSync(sourcePath, targetPath);
+            console.log(`Copied ${doc.filename} to public/media`);
+          } catch (error) {
+            console.error(`Failed to copy ${doc.filename} to public/media:`, error);
+          }
+        }
+        return doc;
+      }
+    ],
     afterRead: [
       ({ doc }) => {
         // Ensure the URL is properly formatted for the frontend
         if (doc.filename) {
-          // Since we have a symlink from public/media to the media folder,
-          // we can serve files directly from /media path
+          // Files are copied to public/media for direct access
           doc.url = `/media/${doc.filename}`;
         }
         return doc;
@@ -90,7 +86,7 @@ export const Media: CollectionConfig = {
     ]
   },
   upload: {
-    // We're using a symlink from public/media to media folder so images are accessible
+    // Files are stored in the media directory and copied to public/media for access
     staticDir: path.resolve(process.cwd(), 'media'),
     imageSizes: [
       {

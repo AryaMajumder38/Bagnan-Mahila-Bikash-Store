@@ -29,52 +29,34 @@ if (!fs.existsSync(mediaDir)) {
   console.log(`✅ Media directory already exists at: ${mediaDir}`);
 }
 
-// Create symlink from public/media to media directory
+// Set up media directory in public folder
 try {
-  // Check if we're in a Vercel deployment
-  const isVercel = process.env.VERCEL === '1';
-  
-  // If we're on Vercel, just create a directory instead of a symlink
-  if (isVercel) {
-    console.log('Detected Vercel environment - creating directory instead of symlink');
-    
-    if (fs.existsSync(publicMediaPath)) {
-      const stats = fs.lstatSync(publicMediaPath);
-      if (stats.isSymbolicLink()) {
-        fs.unlinkSync(publicMediaPath);
-        console.log('Removed existing public/media symlink');
-      }
-    }
-    
-    if (!fs.existsSync(publicMediaPath)) {
-      fs.mkdirSync(publicMediaPath, { recursive: true });
-      console.log(`✅ Created media directory at: ${publicMediaPath}`);
-    }
-  } else {
-    // For local development, use symlinks
-    // Remove existing symlink if it exists
-    if (fs.existsSync(publicMediaPath)) {
-      fs.unlinkSync(publicMediaPath);
-      console.log('Removed existing public/media symlink');
-    }
-    
-    // Create the symlink
-    fs.symlinkSync(
-      path.relative(path.dirname(publicMediaPath), mediaDir), 
-      publicMediaPath, 
-      'dir'
-    );
-    console.log(`✅ Created symlink from public/media to ${mediaDir}`);
-  }
-} catch (error) {
-  console.error('❌ Error setting up media directory:', error);
-  
-  // Fallback: Create a regular directory
-  console.log('Falling back to creating a regular directory');
+  // Create public/media directory if it doesn't exist
   if (!fs.existsSync(publicMediaPath)) {
     fs.mkdirSync(publicMediaPath, { recursive: true });
-    console.log(`✅ Created media directory at: ${publicMediaPath} (fallback)`);
+    console.log(`✅ Created media directory at: ${publicMediaPath}`);
   }
+
+  // Copy all files from media directory to public/media
+  const files = fs.readdirSync(mediaDir);
+  for (const file of files) {
+    const sourcePath = path.join(mediaDir, file);
+    const targetPath = path.join(publicMediaPath, file);
+    
+    // Only copy if file doesn't exist in target or is newer in source
+    const shouldCopy = !fs.existsSync(targetPath) ||
+      fs.statSync(sourcePath).mtime > fs.statSync(targetPath).mtime;
+    
+    if (shouldCopy) {
+        fs.copyFileSync(sourcePath, targetPath);
+        console.log(`✅ Copied ${file} to public/media`);
+      }
+  }
+  
+  console.log('✅ Media files synchronized successfully');
+} catch (error) {
+  console.error('❌ Error setting up media directory:', error);
+  process.exit(1);
 }
 
 // Create a placeholder image if it doesn't exist yet

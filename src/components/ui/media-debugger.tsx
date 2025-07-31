@@ -203,7 +203,7 @@ export function MediaDebugger({
       </CardContent>
       <CardFooter className="flex justify-between border-t bg-muted/20 px-6 py-3">
         <p className="text-xs text-muted-foreground">
-          If images aren't loading, make sure the media directory and symlink are set up correctly.
+          If images aren't loading, make sure the media directory is properly synchronized.
         </p>
       </CardFooter>
     </Card>

@@ -8,7 +8,7 @@
         "@payloadcms/db-mongodb": "^3.47.0",
         "@payloadcms/next": "^3.47.0",
         "@payloadcms/payload-cloud": "^3.47.0",
-        "@payloadcms/plugin-cloud": "^3.0.2",
+        "@payloadcms/plugin-cloud": "^3.0.4",
         "@payloadcms/plugin-cloud-storage": "^3.47.0",
         "@payloadcms/plugin-multi-tenant": "^3.47.0",
         "@payloadcms/richtext-lexical": "^3.47.0",
@@ -48,6 +48,7 @@
         "cmdk": "^1.1.1",
         "date-fns": "^4.1.0",
         "embla-carousel-react": "^8.6.0",
+        "framer-motion": "^12.23.7",
         "graphql": "^16.8.1",
         "input-otp": "^1.4.2",
         "lucide-react": "^0.515.0",
@@ -471,7 +472,7 @@
 
     "@payloadcms/payload-cloud": ["@payloadcms/payload-cloud@3.48.0", "", { "dependencies": { "@aws-sdk/client-cognito-identity": "^3.614.0", "@aws-sdk/client-s3": "^3.614.0", "@aws-sdk/credential-providers": "^3.614.0", "@aws-sdk/lib-storage": "^3.614.0", "@payloadcms/email-nodemailer": "3.48.0", "amazon-cognito-identity-js": "^6.1.2", "nodemailer": "6.9.16" }, "peerDependencies": { "payload": "3.48.0" } }, "sha512-cJMapIn2pglilG7iiSWNtVWHyTc79kDAFAhWVa4lQSO6WY2rH44EwcTC3huYoWXwkltGAV1LlTwI5dYt0fenKw=="],
 
-    "@payloadcms/plugin-cloud": ["@payloadcms/plugin-cloud@3.0.2", "", { "dependencies": { "@aws-sdk/client-cognito-identity": "^3.289.0", "@aws-sdk/client-s3": "^3.142.0", "@aws-sdk/credential-providers": "^3.289.0", "@aws-sdk/lib-storage": "^3.267.0", "amazon-cognito-identity-js": "^6.1.2", "nodemailer": "6.9.9" }, "peerDependencies": { "payload": "^1.8.2 || ^2.0.0" } }, "sha512-qMbXEDiafaw8s49U1SZ3jLd5sOsrZ3aoKOfSLf1fXV22Ndlojev/Sd7LVqnxbSOsoIRwY+pmmM8q/aXlIwvGCg=="],
+    "@payloadcms/plugin-cloud": ["@payloadcms/plugin-cloud@3.0.4", "", { "dependencies": { "@aws-sdk/client-cognito-identity": "^3.289.0", "@aws-sdk/client-s3": "^3.142.0", "@aws-sdk/credential-providers": "^3.289.0", "@aws-sdk/lib-storage": "^3.267.0", "amazon-cognito-identity-js": "^6.1.2", "nodemailer": "6.9.15" }, "peerDependencies": { "payload": "^1.8.2 || ^2.0.0" } }, "sha512-EQHy3IW9hqvcPqDD9BYaG26roDmYuyVHBqIZ9nBh72zLbSgbPbR/e/iLT9CmKGXvBQripKFhmpzAslKL/mOwpA=="],
 
     "@payloadcms/plugin-cloud-storage": ["@payloadcms/plugin-cloud-storage@3.48.0", "", { "dependencies": { "@payloadcms/ui": "3.48.0", "find-node-modules": "^2.1.3", "range-parser": "^1.2.1" }, "peerDependencies": { "payload": "3.48.0", "react": "^19.0.0 || ^19.0.0-rc-65a56d0e-20241020", "react-dom": "^19.0.0 || ^19.0.0-rc-65a56d0e-20241020" } }, "sha512-3jb8ilFwJt6xmDd82FD54scM1omZSQ9s48j+Wu9AaQnN35i35TE7Fb7JKCIpi5IOd0FZnSnholpb8dqeIJSLaA=="],
 
@@ -1193,6 +1194,8 @@
 
     "for-each": ["for-each@0.3.5", "", { "dependencies": { "is-callable": "^1.2.7" } }, "sha512-dKx12eRCVIzqCxFGplyFKJMPvLEWgmNtUrpTiJIR5u97zEhRG8ySrtboPHZXx7daLxQVrl643cTzbab2tkQjxg=="],
 
+    "framer-motion": ["framer-motion@12.23.12", "", { "dependencies": { "motion-dom": "^12.23.12", "motion-utils": "^12.23.6", "tslib": "^2.4.0" }, "peerDependencies": { "@emotion/is-prop-valid": "*", "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0" }, "optionalPeers": ["@emotion/is-prop-valid", "react", "react-dom"] }, "sha512-6e78rdVtnBvlEVgu6eFEAgG9v3wLnYEboM8I5O5EXvfKC8gxGQB8wXJdhkMy10iVcn05jl6CNw7/HTsTCfwcWg=="],
+
     "fsevents": ["fsevents@2.3.3", "", { "os": "darwin" }, "sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw=="],
 
     "function-bind": ["function-bind@1.1.2", "", {}, "sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA=="],
@@ -1536,6 +1539,10 @@
     "mongoose": ["mongoose@8.15.1", "", { "dependencies": { "bson": "^6.10.3", "kareem": "2.6.3", "mongodb": "~6.16.0", "mpath": "0.9.0", "mquery": "5.0.0", "ms": "2.1.3", "sift": "17.1.3" } }, "sha512-RhQ4DzmBi5BNGcS0w4u1vdMRIKcteXTCNzDt1j7XRcdWYBz1MjMjulBhPaeC5jBCHOD1yinuOFTTSOWLLGexWw=="],
 
     "mongoose-paginate-v2": ["mongoose-paginate-v2@1.8.5", "", {}, "sha512-kFxhot+yw9KmpAGSSrF/o+f00aC2uawgNUbhyaM0USS9L7dln1NA77/pLg4lgOaRgXMtfgCENamjqZwIM1Zrig=="],
+
+    "motion-dom": ["motion-dom@12.23.12", "", { "dependencies": { "motion-utils": "^12.23.6" } }, "sha512-RcR4fvMCTESQBD/uKQe49D5RUeDOokkGRmz4ceaJKDBgHYtZtntC/s2vLvY38gqGaytinij/yi3hMcWVcEF5Kw=="],
+
+    "motion-utils": ["motion-utils@12.23.6", "", {}, "sha512-eAWoPgr4eFEOFfg2WjIsMoqJTW6Z8MTUCgn/GZ3VRpClWBdnbjryiA3ZSNLyxCTmCQx4RmYX6jX1iWHbenUPNQ=="],
 
     "mpath": ["mpath@0.9.0", "", {}, "sha512-ikJRQTk8hw5DEoFVxHG1Gn9T/xcjtdnOKIU1JTmGjZZlg9LST2mBLmcX3/ICIbgJydT2GOc15RnNy5mHmzfSew=="],
 
@@ -1967,7 +1974,7 @@
 
     "@payloadcms/graphql/tsx": ["tsx@4.19.2", "", { "dependencies": { "esbuild": "~0.23.0", "get-tsconfig": "^4.7.5" }, "optionalDependencies": { "fsevents": "~2.3.3" }, "bin": { "tsx": "dist/cli.mjs" } }, "sha512-pOUl6Vo2LUq/bSa8S5q7b91cgNSjctn9ugq/+Mvow99qW6x/UZYwzxy/3NmqoT66eHYfCVvFvACC58UBPFf28g=="],
 
-    "@payloadcms/plugin-cloud/nodemailer": ["nodemailer@6.9.9", "", {}, "sha512-dexTll8zqQoVJEZPwQAKzxxtFn0qTnjdQTchoU6Re9BUUGBJiOy3YMn/0ShTW6J5M0dfQ1NeDeRTTl4oIWgQMA=="],
+    "@payloadcms/plugin-cloud/nodemailer": ["nodemailer@6.9.15", "", {}, "sha512-AHf04ySLC6CIfuRtRiEYtGEXgRfa6INgWGluDhnxTZhHSKvrBu7lc1VVchQ0d8nPc4cFaZoPq8vkyNoZr0TpGQ=="],
 
     "@payloadcms/ui/scheduler": ["scheduler@0.25.0", "", {}, "sha512-xFVuu11jh+xcO7JOAGJNOXld8/TcEHK/4CituBUeUb5hqxJLj9YuemAEuvm9gQ/+pgXYfbQuqAkiYu+u7YEsNA=="],
 
