@@ -16,10 +16,11 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 interface Props{
-    category?: string
+    category?: string;
+    initialData: any;
 }
 
-export const ProductList = ({ category }: Props) => {
+export const ProductList = ({ category, initialData }: Props) => {
   const trpc = useTRPC();
   const [page, setPage] = useState(1);
   const [allProducts, setAllProducts] = useState<any[]>([]);
@@ -35,13 +36,14 @@ export const ProductList = ({ category }: Props) => {
   const safeCategory = category && !invalidCategoryPaths.includes(category) ? category : null;
   
   // Query for data loading
-  const { data } = useSuspenseQuery(
-    trpc.products.getMany.queryOptions({
+  const { data } = useSuspenseQuery({
+    ...trpc.products.getMany.queryOptions({
       category: safeCategory,
       page,
       limit: PRODUCTS_PER_PAGE
-    })
-  );
+    }),
+    initialData: initialData
+  });
   
   // Effect to update allProducts when data changes
   useEffect(() => {
